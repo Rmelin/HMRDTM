@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="da" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>HMRDTM · Sideplan</title>
+    <style>
+      :root {
+        --bg: #090b0f;
+        --surface: #11151b;
+        --surface-2: #171c24;
+        --surface-3: #1e2530;
+        --text: #f5f7fa;
+        --muted: #9aa5b5;
+        --line: #29313d;
+        --admin: #ff5d61;
+        --admin-soft: rgba(255, 93, 97, 0.14);
+        --guest: #43d17d;
+        --guest-soft: rgba(67, 209, 125, 0.14);
+        --warning: #ffca57;
+        --warning-soft: rgba(255, 202, 87, 0.13);
+        --accent: var(--admin);
+        --accent-soft: var(--admin-soft);
+        --radius: 20px;
+        --shadow: 0 22px 55px rgba(0, 0, 0, 0.28);
+      }
+
+      html[data-theme="light"] {
+        --bg: #f3f1ed;
+        --surface: #fffdfa;
+        --surface-2: #f6f3ee;
+        --surface-3: #ede9e2;
+        --text: #17191d;
+        --muted: #667080;
+        --line: #dedad2;
+        --shadow: 0 20px 50px rgba(59, 48, 32, 0.12);
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 90% -10%, var(--accent-soft), transparent 34rem),
+          var(--bg);
+        font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        transition: background-color 180ms ease, color 180ms ease;
+      }
+
+      button, input, textarea, select { font: inherit; }
+
+      button, a { -webkit-tap-highlight-color: transparent; }
+
+      button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
+        outline: 3px solid color-mix(in srgb, var(--accent), transparent 45%);
+        outline-offset: 3px;
+      }
+
+      .app-shell { min-height: 100vh; }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        min-height: 68px;
+        padding: 10px clamp(16px, 4vw, 42px);
+        border-bottom: 1px solid color-mix(in srgb, var(--line), transparent 20%);
+        background: color-mix(in srgb, var(--bg), transparent 10%);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand { display: flex; align-items: center; gap: 11px; font-weight: 850; letter-spacing: -0.03em; }
+
+      .brand-mark {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 12px;
+        color: #fff;
+        background: var(--accent);
+        box-shadow: 0 9px 24px color-mix(in srgb, var(--accent), transparent 68%);
+        transition: background-color 180ms ease;
+      }
+
+      .brand small { display: block; margin-top: -3px; color: var(--muted); font-size: 11px; font-weight: 650; letter-spacing: 0; }
+
+      .top-actions { display: flex; gap: 8px; }
+
+      .icon-button, .chip, .primary, .secondary, .nav-button, .status-button {
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        color: var(--text);
+        background: var(--surface-2);
+        cursor: pointer;
+        transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+      }
+
+      .icon-button:hover, .chip:hover, .primary:hover, .secondary:hover, .nav-button:hover, .status-button:hover { transform: translateY(-1px); }
+
+      .icon-button { width: 44px; padding: 0; font-size: 18px; }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 238px minmax(0, 1fr);
+        gap: 28px;
+        width: min(1440px, 100%);
+        margin: 0 auto;
+        padding: 28px clamp(16px, 4vw, 42px) 60px;
+      }
+
+      .sidebar { position: sticky; top: 96px; height: fit-content; }
+
+      .eyebrow { margin: 0 0 9px; color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+
+      .role-switch {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+        margin-bottom: 22px;
+        padding: 5px;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background: var(--surface);
+      }
+
+      .chip { min-height: 38px; border: 0; background: transparent; font-weight: 750; }
+      .chip.active { color: #fff; background: var(--accent); }
+
+      .nav { display: grid; gap: 7px; }
+
+      .nav-button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 10px 12px;
+        border-color: transparent;
+        background: transparent;
+        text-align: left;
+        font-weight: 700;
+      }
+
+      .nav-button span:first-child { width: 24px; text-align: center; }
+      .nav-button.active { border-color: color-mix(in srgb, var(--accent), transparent 55%); background: var(--accent-soft); }
+
+      .sidebar-note {
+        margin-top: 22px;
+        padding: 15px;
+        border: 1px dashed var(--line);
+        border-radius: 16px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      main { min-width: 0; }
+
+      .screen { display: none; animation: reveal 180ms ease-out; }
+      .screen.active { display: block; }
+      @keyframes reveal { from { opacity: 0; transform: translateY(5px); } }
+
+      .hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { max-width: 830px; margin-bottom: 9px; font-size: clamp(30px, 5vw, 58px); line-height: 1.02; letter-spacing: -0.055em; }
+      h2 { margin-bottom: 8px; font-size: 21px; letter-spacing: -0.025em; }
+      h3 { margin-bottom: 5px; font-size: 16px; }
+      .lede { max-width: 720px; margin-bottom: 0; color: var(--muted); font-size: 17px; }
+
+      .primary, .secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .primary { border-color: var(--accent); color: #fff; background: var(--accent); }
+      .secondary { background: var(--surface); }
+
+      .grid { display: grid; gap: 16px; }
+      .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+      .card {
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .card.flat { box-shadow: none; }
+      .card p:last-child { margin-bottom: 0; }
+      .muted { color: var(--muted); }
+
+      .metric { position: relative; overflow: hidden; }
+      .metric::after { content: ""; position: absolute; right: -22px; bottom: -36px; width: 100px; height: 100px; border-radius: 50%; background: var(--accent-soft); }
+      .metric strong { display: block; margin-top: 11px; font-size: 34px; letter-spacing: -0.04em; }
+
+      .flow { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .flow::before { content: ""; position: absolute; top: 25px; right: 10%; left: 10%; height: 2px; background: var(--line); }
+      .flow-step { position: relative; z-index: 1; padding: 18px 14px; border: 1px solid var(--line); border-radius: 17px; background: var(--surface); }
+      .flow-step b { display: grid; width: 28px; height: 28px; margin-bottom: 13px; place-items: center; border-radius: 50%; color: #fff; background: var(--accent); }
+
+      .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 32px 0 14px; }
+      .section-heading p { margin: 0; color: var(--muted); }
+
+      .site-map { display: grid; grid-template-columns: 0.72fr 1fr 1fr; gap: 14px; }
+      .map-column { padding: 17px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+      .map-column > h3 { display: flex; align-items: center; gap: 8px; }
+      .map-list { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+      .map-list li { padding: 11px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+      .map-list small { display: block; margin-top: 2px; color: var(--muted); }
+
+      .decision { display: flex; gap: 12px; }
+      .decision-icon { flex: 0 0 auto; display: grid; width: 36px; height: 36px; place-items: center; border-radius: 11px; background: var(--accent-soft); }
+
+      .architecture {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .architecture-step {
+        position: relative;
+        display: grid;
+        align-content: center;
+        min-height: 126px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 17px;
+        background: var(--surface);
+      }
+
+      .architecture-step:not(:last-child)::after {
+        content: "→";
+        position: absolute;
+        z-index: 2;
+        top: 50%;
+        right: -18px;
+        display: grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--accent);
+        background: var(--bg);
+        transform: translateY(-50%);
+      }
+
+      .architecture-step span { color: var(--accent); font-size: 21px; }
+      .architecture-step h3 { margin-top: 8px; }
+      .architecture-step p { margin: 0; color: var(--muted); font-size: 13px; }
+
+      .recommendation {
+        position: relative;
+        overflow: hidden;
+        border-color: color-mix(in srgb, var(--guest), transparent 52%);
+        background: linear-gradient(135deg, var(--surface), var(--guest-soft));
+      }
+
+      .recommendation::after {
+        content: "✓";
+        position: absolute;
+        right: 18px;
+        bottom: -44px;
+        color: var(--guest);
+        font-size: 128px;
+        font-weight: 900;
+        opacity: 0.09;
+      }
+
+      .comparison { overflow-x: auto; padding: 0; }
+      .comparison table { width: 100%; min-width: 680px; border-collapse: collapse; }
+      .comparison th, .comparison td { padding: 15px 17px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      .comparison tr:last-child td { border-bottom: 0; }
+      .comparison th { color: var(--muted); background: var(--surface-2); font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; }
+      .comparison th:first-child { border-radius: var(--radius) 0 0 0; }
+      .comparison th:last-child { border-radius: 0 var(--radius) 0 0; }
+      .comparison td:first-child { width: 22%; font-weight: 800; }
+      .comparison .winner { color: var(--guest); }
+
+      .deploy-steps { counter-reset: deploy; }
+      .deploy-step { position: relative; padding-left: 55px; }
+      .deploy-step::before {
+        counter-increment: deploy;
+        content: counter(deploy);
+        position: absolute;
+        top: 17px;
+        left: 17px;
+        display: grid;
+        width: 27px;
+        height: 27px;
+        place-items: center;
+        border-radius: 9px;
+        color: #fff;
+        background: var(--accent);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      code { padding: 2px 5px; border-radius: 6px; color: var(--text); background: var(--surface-3); font-size: 0.9em; }
+      .source-list { display: flex; flex-wrap: wrap; gap: 8px; }
+      .source-list a { color: var(--muted); }
+
+      .prototype-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
+      .prototype-header .back { color: var(--muted); font-weight: 700; }
+
+      .event-banner { position: relative; overflow: hidden; padding: 25px; border-color: color-mix(in srgb, var(--accent), transparent 60%); background: linear-gradient(135deg, var(--surface), var(--accent-soft)); }
+      .event-banner::after { content: "🍽"; position: absolute; right: 24px; top: 14px; font-size: 74px; filter: grayscale(1); opacity: 0.12; transform: rotate(8deg); }
+
+      .meta-row { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; color: var(--muted); }
+      .meta-row span { display: flex; gap: 6px; align-items: center; }
+
+      .alert { display: flex; justify-content: space-between; gap: 14px; margin: 16px 0; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--warning), transparent 55%); border-radius: 15px; background: var(--warning-soft); }
+      .alert a { color: var(--text); font-weight: 800; }
+
+      .meal-list { display: grid; gap: 10px; }
+      .meal-row { display: grid; grid-template-columns: minmax(160px, 1fr) auto auto; align-items: center; gap: 16px; padding: 15px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface-2); }
+      .meal-row .time { color: var(--muted); font-size: 13px; }
+      .counts { display: flex; gap: 6px; }
+      .count { min-width: 42px; padding: 6px 8px; border-radius: 10px; text-align: center; font-weight: 850; background: var(--surface-3); }
+      .count.yes { color: var(--guest); }
+      .count.maybe { color: var(--warning); }
+      .count.no { color: var(--muted); }
+
+      .pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border-radius: 99px; color: var(--muted); background: var(--surface-3); font-size: 12px; font-weight: 800; }
+      .pill.warning { color: var(--warning); background: var(--warning-soft); }
+      .pill.accent { color: var(--accent); background: var(--accent-soft); }
+
+      .guest-list { display: grid; gap: 9px; }
+      .guest-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+      .guest-row:last-child { padding-bottom: 0; border: 0; }
+      .avatar { display: inline-grid; width: 34px; height: 34px; margin-right: 9px; place-items: center; border-radius: 50%; color: #fff; background: var(--accent); font-size: 12px; font-weight: 900; vertical-align: middle; }
+
+      .form-stack { display: grid; gap: 14px; }
+      label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 750; }
+      input, textarea, select { width: 100%; min-height: 46px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 12px; color: var(--text); background: var(--surface-2); }
+      textarea { min-height: 90px; resize: vertical; }
+      .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+      .status-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+      .status-button { padding: 9px 10px; font-weight: 800; }
+      .status-button.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+      .guest-meal { padding: 16px 0; border-bottom: 1px solid var(--line); }
+      .guest-meal:last-child { padding-bottom: 0; border-bottom: 0; }
+      .guest-meal-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+
+      .chat-feed { display: grid; gap: 12px; }
+      .message { max-width: 83%; padding: 11px 13px; border-radius: 15px 15px 15px 4px; background: var(--surface-2); }
+      .message.mine { margin-left: auto; border-radius: 15px 15px 4px 15px; background: var(--accent-soft); }
+      .message small { display: block; margin-bottom: 3px; color: var(--muted); }
+
+      .bottom-nav { display: none; }
+
+      .toast { position: fixed; right: 20px; bottom: 20px; z-index: 40; padding: 12px 16px; border: 1px solid var(--line); border-radius: 13px; color: var(--text); background: var(--surface); box-shadow: var(--shadow); opacity: 0; pointer-events: none; transform: translateY(10px); transition: 180ms ease; }
+      .toast.show { opacity: 1; transform: none; }
+
+      @media (max-width: 900px) {
+        .layout { grid-template-columns: 1fr; padding-top: 18px; padding-bottom: 92px; }
+        .sidebar { display: none; }
+        .grid.three { grid-template-columns: 1fr 1fr; }
+        .site-map { grid-template-columns: 1fr 1fr; }
+        .site-map .map-column:first-child { grid-column: 1 / -1; }
+        .architecture { grid-template-columns: 1fr 1fr; }
+        .architecture-step:not(:last-child)::after { display: none; }
+        .bottom-nav {
+          position: fixed;
+          right: 12px;
+          bottom: 12px;
+          left: 12px;
+          z-index: 30;
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: 1fr;
+          gap: 5px;
+          padding: 6px;
+          border: 1px solid var(--line);
+          border-radius: 18px;
+          background: color-mix(in srgb, var(--surface), transparent 5%);
+          box-shadow: var(--shadow);
+          backdrop-filter: blur(18px);
+        }
+        .bottom-nav .nav-button { display: grid; justify-items: center; gap: 0; min-height: 49px; padding: 5px; font-size: 11px; text-align: center; }
+      }
+
+      @media (max-width: 620px) {
+        .brand small { display: none; }
+        .topbar { min-height: 62px; }
+        .layout { padding-inline: 12px; }
+        .hero { align-items: flex-start; flex-direction: column; }
+        .hero .primary { width: 100%; }
+        h1 { font-size: 38px; }
+        .grid.three, .grid.two, .site-map, .input-grid { grid-template-columns: 1fr; }
+        .site-map .map-column:first-child { grid-column: auto; }
+        .flow { grid-template-columns: 1fr; }
+        .flow::before { top: 10%; bottom: 10%; left: 28px; width: 2px; height: auto; }
+        .flow-step { display: grid; grid-template-columns: 36px 1fr; gap: 3px 9px; align-items: center; }
+        .flow-step b { grid-row: 1 / 3; margin: 0; }
+        .flow-step h3, .flow-step p { margin: 0; }
+        .meal-row { grid-template-columns: 1fr auto; }
+        .architecture { grid-template-columns: 1fr; }
+        .architecture-step { min-height: auto; }
+        .meal-row .counts { grid-column: 1 / -1; }
+        .card { padding: 16px; border-radius: 17px; }
+        .alert { align-items: flex-start; flex-direction: column; }
+        .top-actions .role-label { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">H</div>
+          <div>HMRDTM <small>Hvor mange er der til mad</small></div>
+        </div>
+        <div class="top-actions">
+          <button class="secondary role-label" id="quickRole" type="button">Se som gæst</button>
+          <button class="icon-button" id="themeToggle" type="button" aria-label="Skift farvetema" title="Skift farvetema">☀</button>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar" aria-label="Prototypens navigation">
+          <p class="eyebrow">Klikbar sideplan</p>
+          <div class="role-switch" aria-label="Vælg rolle">
+            <button class="chip active" data-role="admin" type="button">Admin</button>
+            <button class="chip" data-role="guest" type="button">Gæst</button>
+          </div>
+          <nav class="nav" id="desktopNav"></nav>
+          <div class="sidebar-note">
+            <strong>MVP-princip</strong><br />Ét tydeligt næste trin på hver skærm. Alt kritisk kan nås med tommelfingeren.
+          </div>
+        </aside>
+
+        <main>
+          <section class="screen active" data-screen="plan">
+            <div class="hero">
+              <div>
+                <p class="eyebrow">Produktplan · MVP</p>
+                <h1>Fra invitation til et sikkert madantal.</h1>
+                <p class="lede">En enkel, rolleopdelt webapp til små events. Planen prioriterer overblik, ændringer efter Svar senest og et hurtigt gæsteflow.</p>
+              </div>
+              <button class="primary" data-go="overview" type="button">Åbn prototype →</button>
+            </div>
+
+            <div class="grid three">
+              <article class="card metric"><span class="muted">Primær succes</span><strong>≤ 2 min.</strong><p>fra gæstelink til alle svar er gemt</p></article>
+              <article class="card metric"><span class="muted">Admin-overblik</span><strong>1 skærm</strong><p>til måltider, forventet antal og advarsler</p></article>
+              <article class="card metric"><span class="muted">MVP-skala</span><strong>3–6</strong><p>events på én SQLite-server</p></article>
+            </div>
+
+            <div class="section-heading"><div><h2>Kerneflow</h2><p>Den korteste vej gennem produktet</p></div></div>
+            <div class="flow">
+              <article class="flow-step"><b>1</b><div><h3>Admin opretter</h3><p class="muted">Event, måltider og gæstepladser.</p></div></article>
+              <article class="flow-step"><b>2</b><div><h3>Link deles</h3><p class="muted">Ét unikt, sikkert link pr. gæst.</p></div></article>
+              <article class="flow-step"><b>3</b><div><h3>Gæst svarer</h3><p class="muted">Navn, tider, kost og måltider.</p></div></article>
+              <article class="flow-step"><b>4</b><div><h3>Admin handler</h3><p class="muted">Ser antal og ændringer efter Svar senest.</p></div></article>
+            </div>
+
+            <div class="section-heading"><div><h2>Sidekort</h2><p>Forskellige views, samme event-data</p></div></div>
+            <div class="site-map">
+              <article class="map-column">
+                <h3>◉ Fælles</h3>
+                <ul class="map-list">
+                  <li>Forside <small>Rutevalg og admin-login</small></li>
+                  <li>Temavalg <small>Dark som standard, light gemmes</small></li>
+                  <li>Fejl / udløbet link <small>Kort og handlingsorienteret</small></li>
+                </ul>
+              </article>
+              <article class="map-column">
+                <h3 style="color:var(--admin)">◆ Admin</h3>
+                <ul class="map-list">
+                  <li>Eventliste <small>Aktive og kommende events</small></li>
+                  <li>Eventdashboard <small>Måltider, gæster, kost og chat</small></li>
+                  <li>Måltidsdetalje <small>Navne, status og log over sene ændringer</small></li>
+                  <li>Opret / redigér <small>Event, måltid og invitationer</small></li>
+                </ul>
+              </article>
+              <article class="map-column">
+                <h3 style="color:var(--guest)">● Gæst</h3>
+                <ul class="map-list">
+                  <li>Eventlanding <small>Info, ICS, eventstatus og tider</small></li>
+                  <li>Måltider <small>Ja, nej eller måske pr. måltid</small></li>
+                  <li>Kostprofil <small>Type og fritekstnote</small></li>
+                  <li>Chatvæg <small>Kronologisk feed, nyeste nederst</small></li>
+                </ul>
+              </article>
+            </div>
+
+            <div class="section-heading"><div><h2>MVP-beslutninger</h2><p>Foreslåede defaults, så løsningen er konsekvent</p></div></div>
+            <div class="grid two">
+              <article class="card flat decision"><div class="decision-icon">∅</div><div><h3>Intet måltidssvar = ikke angivet</h3><p class="muted">Vises separat og tælles ikke som et aktivt “måske”. Forventet antal beregnes stadig ud fra tids-overlap.</p></div></article>
+              <article class="card flat decision"><div class="decision-icon">⇄</div><div><h3>Overlapregel</h3><p class="muted">Gæsten overlapper når <code>comes_at &lt; meal_end</code> og <code>leaves_at &gt; meal_start</code>. Berøring præcis ved kanten tæller ikke.</p></div></article>
+              <article class="card flat decision"><div class="decision-icon">⚠</div><div><h3>Svar senest markerer sene ændringer</h3><p class="muted">Svar og tider må stadig rettes, men påvirkede måltider logges og får badge efter Svar senest.</p></div></article>
+              <article class="card flat decision"><div class="decision-icon">🔒</div><div><h3>Sessions frem for rå tokens</h3><p class="muted">Invite-token veksles til en sikker cookie-session. Rå tokens gemmes hashed og skrives aldrig i logs.</p></div></article>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="deploy">
+            <div class="hero">
+              <div>
+                <p class="eyebrow">Driftsplan · UGREEN DXP2800 + Cloudflare</p>
+                <h1>En lille produktion, der er nem at passe.</h1>
+                <p class="lede">HMRDTM kører som containere på din NASync DXP2800. Domænet bliver hos Cloudflare, SQLite-data ligger på et persistent NAS-volume, og kun selve webappen publiceres.</p>
+              </div>
+              <span class="pill accent">✓ DXP2800 bekræftet</span>
+            </div>
+
+            <div class="grid three">
+              <article class="card metric"><span class="muted">Processor</span><strong>N100</strong><p>Intel x86 · 4 kerner</p></article>
+              <article class="card metric"><span class="muted">Hukommelse</span><strong>8 GB</strong><p>rigeligt til dette lille MVP</p></article>
+              <article class="card metric"><span class="muted">Netværk</span><strong>2.5 GbE</strong><p>Docker og Tunnel understøttes</p></article>
+            </div>
+
+            <article class="card recommendation">
+              <p class="eyebrow" style="color:var(--guest)">Anbefalet til dette MVP</p>
+              <h2>Brug Cloudflare Tunnel – uden Caddy foran</h2>
+              <p>Det passer bedst til en lille app på et hjemmenetværk: ingen indgående porte i routeren, intet krav om fast offentlig IP, og TLS håndteres ved Cloudflare. <code>cloudflared</code> sender trafikken videre til HMRDTM på et internt Docker-netværk.</p>
+              <p class="muted"><strong>Vigtigt:</strong> Gæstelinks skal være offentligt tilgængelige og beskyttes af deres lange invite-token. Cloudflare Access kan eventuelt lægges foran et separat admin-hostname senere, men må ikke blokere gæsteflowet.</p>
+            </article>
+
+            <div class="section-heading"><div><h2>Anbefalet arkitektur</h2><p>Kun én udgående forbindelse fra NAS'en</p></div></div>
+            <div class="architecture">
+              <article class="architecture-step"><span>📱</span><h3>Gæst / admin</h3><p>Åbner <code>mad.domæne.dk</code></p></article>
+              <article class="architecture-step"><span>☁</span><h3>Cloudflare</h3><p>DNS, TLS, proxy og basal trafikbeskyttelse</p></article>
+              <article class="architecture-step"><span>⇣</span><h3>Cloudflare Tunnel</h3><p>Udgående tunnel – ingen port-forward</p></article>
+              <article class="architecture-step"><span>▣</span><h3>HMRDTM</h3><p>Next.js-container på internt Docker-netværk</p></article>
+              <article class="architecture-step"><span>◉</span><h3>SQLite</h3><p>WAL + persistent volume + kontrolleret backup</p></article>
+            </div>
+
+            <div class="section-heading"><div><h2>Tunnel eller Caddy?</h2><p>Begge er gode – men til forskellige netværk</p></div></div>
+            <article class="card comparison">
+              <table>
+                <thead><tr><th>Område</th><th>Cloudflare Tunnel</th><th>Caddy direkte</th></tr></thead>
+                <tbody>
+                  <tr><td>Router og offentlig IP</td><td class="winner"><strong>Ingen indgående porte.</strong> Virker også typisk bag CGNAT, fordi forbindelsen startes fra NAS'en.</td><td>Kræver normalt offentlig IP/DDNS og port-forward af 80/443 til Caddy.</td></tr>
+                  <tr><td>HTTPS</td><td>Cloudflare afslutter offentlig TLS og sender trafikken gennem tunnelen.</td><td><strong>Meget enkelt.</strong> Caddy henter og fornyer selv certifikater, når DNS og portene er korrekte.</td></tr>
+                  <tr><td>Eksponering</td><td class="winner">NAS'ens webport og hjemme-IP behøver ikke være direkte tilgængelige.</td><td>Caddy bliver et offentligt endpoint; firewall, router og origin-begrænsning skal passes.</td></tr>
+                  <tr><td>Afhængigheder</td><td>Afhænger af Cloudflare, en tunnel-token og deres edge. Cloudflare er TLS-endpoint.</td><td class="winner">Open source og mere direkte kontrol; appen kan fortsat nås uden Cloudflare Tunnel.</td></tr>
+                  <tr><td>Cloudflare-domæne</td><td class="winner">Dashboardet kan oprette tunnelens DNS-record automatisk.</td><td>A/AAAA-record skal pege på hjemmet; dynamisk IP kræver opdatering.</td></tr>
+                  <tr><td>Drift for HMRDTM</td><td class="winner"><strong>Lavest kompleksitet.</strong> App + cloudflared er nok.</td><td>Godt valg hvis NAS'en allerede bruger Caddy til flere offentlige tjenester.</td></tr>
+                </tbody>
+              </table>
+            </article>
+
+            <div class="section-heading"><div><h2>Fordele og ulemper</h2><p>Det praktiske valg</p></div></div>
+            <div class="grid two">
+              <article class="card flat">
+                <h2>Cloudflare Tunnel</h2>
+                <p><span class="pill accent">Bedst til MVP</span></p>
+                <p><strong>Fordele</strong></p>
+                <ul class="muted">
+                  <li>Ingen port-forwarding eller krav om fast offentlig IP.</li>
+                  <li>Skjuler origin og passer naturligt til et domæne hos Cloudflare.</li>
+                  <li>Cloudflare håndterer offentlig TLS, DDoS-beskyttelse og proxy-laget.</li>
+                  <li>Let at køre som ekstra Docker-container.</li>
+                </ul>
+                <p><strong>Ulemper</strong></p>
+                <ul class="muted">
+                  <li>Appen er afhængig af Cloudflare og en fungerende tunnel.</li>
+                  <li>Cloudflare terminerer TLS og kan teknisk se HTTP-trafikken.</li>
+                  <li>Tunnel-token er en hemmelighed, som skal beskyttes og kunne roteres.</li>
+                  <li>Access-login kan ikke bruges foran de offentlige gæstelinks.</li>
+                </ul>
+              </article>
+              <article class="card flat">
+                <h2>Caddy</h2>
+                <p><span class="pill">God til direkte hosting</span></p>
+                <p><strong>Fordele</strong></p>
+                <ul class="muted">
+                  <li>En meget enkel reverse proxy med automatisk HTTPS.</li>
+                  <li>Åben software og fuld kontrol over proxy, certifikater og logs.</li>
+                  <li>God, hvis Caddy allerede samler flere tjenester på NAS'en.</li>
+                  <li>Mindre afhængighed af en bestemt tunneludbyder.</li>
+                </ul>
+                <p><strong>Ulemper</strong></p>
+                <ul class="muted">
+                  <li>Kræver normalt offentlig reachability og åbne porte 80/443.</li>
+                  <li>Hjemme-IP/origin kan blive eksponeret og skal sikres aktivt.</li>
+                  <li>CGNAT kan blokere løsningen uden hjælp fra internetudbyderen.</li>
+                  <li>DDNS, routerregler, firewall og certifikatflow giver mere drift.</li>
+                </ul>
+              </article>
+            </div>
+
+            <div class="section-heading"><div><h2>Deploy i 8 trin</h2><p>Foreslået produktionsforløb</p></div></div>
+            <div class="grid two deploy-steps">
+              <article class="card flat deploy-step"><h3>Model bekræftet: DXP2800</h3><p class="muted">Intel N100/x86, 8 GB DDR5, UGOS Pro og officiel Docker-understøttelse. Brug Docker-appens Compose-projekt – en VM er unødvendig.</p></article>
+              <article class="card flat deploy-step"><h3>Opret mapper og rettigheder</h3><p class="muted">Lav særskilte mapper til compose, app-data og backups. App-containeren får kun skriveadgang til sit eget data-volume.</p></article>
+              <article class="card flat deploy-step"><h3>Byg en produktions-image</h3><p class="muted">Kør Next.js som en ikke-root bruger, pin image-versionen, og sæt secrets som NAS/Docker-hemmeligheder – aldrig i Git.</p></article>
+              <article class="card flat deploy-step"><h3>Kør app og cloudflared</h3><p class="muted">Samme interne Docker-netværk. HMRDTM skal kun være <code>expose</code>d internt; publicér ikke port 3000 på NAS'ens LAN/WAN.</p></article>
+              <article class="card flat deploy-step"><h3>Opret Cloudflare Tunnel</h3><p class="muted">Lav en navngivet production-tunnel og map eksempelvis <code>mad.domæne.dk</code> til <code>http://hmrdtm:3000</code>.</p></article>
+              <article class="card flat deploy-step"><h3>Hærd adgang</h3><p class="muted">Behold appens admin-login og rate-limit. Brug lange gæstetokens, sikre cookies, CSP og Cloudflare rate-limits på loginruten.</p></article>
+              <article class="card flat deploy-step"><h3>Backup SQLite korrekt</h3><p class="muted">Tag en konsistent SQLite-backup med SQLite backup-API/<code>.backup</code> eller stop appen kort. Kopiér ikke kun <code>.db</code>, mens WAL er aktiv. Gem mindst én kopi uden for NAS'en.</p></article>
+              <article class="card flat deploy-step"><h3>Opdater og rollback</h3><p class="muted">Backup → hent nyt pinned image → kør migration → healthcheck → skift. Behold forrige image og seneste databasebackup til hurtig rollback.</p></article>
+            </div>
+
+            <div class="section-heading"><div><h2>DXP2800-profil</h2><p>Konkrete valg til denne NAS</p></div></div>
+            <div class="grid two">
+              <article class="card flat decision"><div class="decision-icon">▣</div><div><h3>Let container-budget</h3><p class="muted">Start med ca. 0,5 CPU / 512 MB til HMRDTM og 0,25 CPU / 128 MB til <code>cloudflared</code>. Det efterlader god plads til UGOS Pro og NAS'ens øvrige opgaver; justér kun ved målbar belastning.</p></div></article>
+              <article class="card flat decision"><div class="decision-icon">◉</div><div><h3>Database på datavolume</h3><p class="muted">Placér SQLite på en delt mappe på datadiskene – ikke på den interne eMMC-systemdisk. To ens diske i RAID 1 giver drift ved ét diskudfald, men er stadig ikke en backup.</p></div></article>
+              <article class="card flat decision"><div class="decision-icon">↯</div><div><h3>UPS og ren nedlukning</h3><p class="muted">En lille kompatibel UPS anbefales. Lad UGOS Pro lukke NAS'en kontrolleret ved længere strømsvigt for at beskytte database og filsystem.</p></div></article>
+              <article class="card flat decision"><div class="decision-icon">↗</div><div><h3>Ekstern backup</h3><p class="muted">Daglig lokal backup og mindst én krypteret kopi uden for DXP2800 – fx en anden enhed eller cloud storage. Test gendannelse før første rigtige event.</p></div></article>
+            </div>
+
+            <div class="section-heading"><div><h2>Driftsregler</h2><p>Små vaner, stor forskel</p></div></div>
+            <div class="grid three">
+              <article class="card metric"><span class="muted">Backup</span><strong>Dagligt</strong><p>7 daglige + 4 ugentlige kopier</p></article>
+              <article class="card metric"><span class="muted">Healthcheck</span><strong>5 min.</strong><p>HTTP-check og alarm ved nedetid</p></article>
+              <article class="card metric"><span class="muted">Opdatering</span><strong>Månedligt</strong><p>eller straks ved kritisk sikkerhedsfix</p></article>
+            </div>
+
+            <div class="section-heading"><div><h2>Hvornår ville jeg vælge Caddy?</h2></div></div>
+            <article class="card flat decision"><div class="decision-icon">↗</div><div><h3>Vælg Caddy, hvis direkte hosting er et bevidst krav</h3><p class="muted">Det giver mening, når du har offentlig IP, styr på router/firewall og allerede bruger Caddy til flere tjenester. Jeg ville ikke køre både Tunnel og Caddy til kun HMRDTM; det ekstra proxy-lag giver ingen tydelig MVP-gevinst.</p></div></article>
+
+            <div class="section-heading"><div><h2>Officielle kilder</h2><p>Kontrolleret 13. juli 2026</p></div></div>
+            <article class="card flat source-list">
+              <a href="https://developers.cloudflare.com/tunnel/setup/" target="_blank" rel="noreferrer">Cloudflare Tunnel setup ↗</a>
+              <a href="https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/routing-to-tunnel/" target="_blank" rel="noreferrer">Publicerede applikationer ↗</a>
+              <a href="https://caddyserver.com/docs/automatic-https" target="_blank" rel="noreferrer">Caddy Automatic HTTPS ↗</a>
+              <a href="https://caddyserver.com/docs/quick-starts/reverse-proxy" target="_blank" rel="noreferrer">Caddy reverse proxy ↗</a>
+              <a href="https://nas.ugreen.com/products/ugreen-nasync-dxp2800-nas-storage" target="_blank" rel="noreferrer">UGREEN DXP2800-specifikationer ↗</a>
+            </article>
+          </section>
+
+          <section class="screen" data-screen="overview">
+            <div class="prototype-header"><div><p class="eyebrow" id="viewRoleLabel">Admin prototype</p><h1 style="font-size:clamp(29px,4vw,46px)">Sommerweekend 2026</h1></div><span class="pill accent">Live demo-data</span></div>
+            <article class="card event-banner">
+              <h2>Sommerweekend på Møllehuset</h2>
+              <p class="muted">En hyggelig weekend med fælles mad, spil og gåtur.</p>
+              <div class="meta-row"><span>📍 Møllevej 12, Roskilde</span><span>🗓 15. aug. 14:00 – 16. aug. 14:00</span><span>👥 8 inviterede</span></div>
+            </article>
+
+            <div class="admin-only">
+              <div class="alert"><span><strong>⚠ 2 ændringer efter Svar senest</strong><br /><span class="muted">1 gæst har ændret tider, 1 har ændret måltidssvar</span></span><button class="secondary" data-go="detail" type="button">Se ændringer</button></div>
+              <div class="grid three">
+                <article class="card metric"><span class="muted">Forventet i alt</span><strong>7</strong><p>baseret på komme/gå</p></article>
+                <article class="card metric"><span class="muted">Kosthensyn</span><strong>3</strong><p>1 vegetar · 2 noter</p></article>
+                <article class="card metric"><span class="muted">Mangler svar</span><strong>1</strong><p>på mindst ét måltid</p></article>
+              </div>
+              <div class="section-heading"><div><h2>Måltider</h2><p>Klik et måltid for detaljer</p></div><button class="primary" data-demo-toast="Måltidsformular åbnes her" type="button">＋ Måltid</button></div>
+              <div class="card meal-list">
+                <div class="meal-row"><div><h3>Aftensmad</h3><div class="time">Lørdag · 18:00–19:30</div></div><div class="counts"><span class="count yes" title="Ja">6</span><span class="count maybe" title="Måske">1</span><span class="count no" title="Nej">1</span></div><button class="secondary" data-go="detail" type="button">Detaljer →</button></div>
+                <div class="meal-row"><div><h3>Morgenmad</h3><div class="time">Søndag · 08:30–10:00</div></div><div class="counts"><span class="count yes">5</span><span class="count maybe">2</span><span class="count no">1</span></div><button class="secondary" data-go="detail" type="button">Detaljer →</button></div>
+              </div>
+              <div class="section-heading"><div><h2>Seneste gæster</h2><p>Invitation, tider og kost samlet</p></div><button class="secondary" data-demo-toast="3 sikre links kopieret" type="button">Kopiér links</button></div>
+              <article class="card guest-list">
+                <div class="guest-row"><div><span class="avatar">AM</span><strong>Anna Madsen</strong><br /><span class="muted">Lør. 14:00 → søn. 13:30</span></div><div><span class="pill">Vegetar</span></div></div>
+                <div class="guest-row"><div><span class="avatar">JM</span><strong>Jonas Møller</strong><br /><span class="muted">Lør. 17:30 → søn. 11:00</span></div><div><span class="pill warning">Ændret</span></div></div>
+                <div class="guest-row"><div><span class="avatar">?</span><strong>Ikke navngivet</strong><br /><span class="muted">Har ikke åbnet invitationen</span></div><div><span class="pill">Link klar</span></div></div>
+              </article>
+            </div>
+
+            <div class="guest-only" hidden>
+              <div class="section-heading"><div><h2>Hej Anna 👋</h2><p>Udfyld de fire områder – dine svar gemmes løbende</p></div><a class="secondary" href="#" data-demo-toast="ICS-kalenderfil klargøres">＋ Kalender</a></div>
+              <div class="grid two">
+                <article class="card">
+                  <h2>Din deltagelse</h2><div class="status-group"><button class="status-button active">Ja</button><button class="status-button">Måske</button><button class="status-button">Nej</button></div>
+                  <div class="input-grid" style="margin-top:14px"><label>Jeg kommer<input type="datetime-local" value="2026-08-15T14:00" /></label><label>Jeg går<input type="datetime-local" value="2026-08-16T13:30" /></label></div>
+                </article>
+                <article class="card form-stack">
+                  <h2>Navn & kost</h2><label>Displaynavn<input value="Anna Madsen" /></label><label>Kosttype<select><option>Ingen særlige hensyn</option><option selected>Vegetar</option><option>Veganer</option><option>Allergi</option><option>Andet</option></select></label><label>Note<textarea>Jeg spiser ikke tomat.</textarea></label><button class="primary" data-demo-toast="Profilen er gemt" type="button">Gem profil</button>
+                </article>
+              </div>
+              <div class="section-heading"><div><h2>Dine måltider</h2><p>Intet svar vises som “ikke angivet”</p></div></div>
+              <article class="card">
+                <div class="guest-meal"><div class="guest-meal-head"><div><h3>Aftensmad</h3><span class="muted">Lørdag · 18:00–19:30</span></div><span class="pill accent">Du er til stede</span></div><div class="status-group"><button class="status-button active">Ja</button><button class="status-button">Måske</button><button class="status-button">Nej</button></div></div>
+                <div class="guest-meal"><div class="guest-meal-head"><div><h3>Morgenmad</h3><span class="muted">Søndag · 08:30–10:00</span></div><span class="pill">Ikke angivet</span></div><div class="status-group"><button class="status-button">Ja</button><button class="status-button">Måske</button><button class="status-button">Nej</button></div></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="detail">
+            <div class="prototype-header"><div><button class="secondary back" data-go="overview" type="button">← Tilbage</button><p class="eyebrow" style="margin-top:18px">Måltidsdetalje</p><h1 style="font-size:clamp(30px,4vw,48px)">Aftensmad</h1><p class="lede">Lørdag 15. august · 18:00–19:30 · Svar senest fredag 16:00</p></div></div>
+            <div class="admin-only">
+              <div class="grid three">
+                <article class="card metric"><span class="muted">Ja</span><strong>6</strong><p>5 voksne · 1 barn</p></article>
+                <article class="card metric"><span class="muted">Måske</span><strong>1</strong><p>kræver opfølgning</p></article>
+                <article class="card metric"><span class="muted">Forventet</span><strong>7</strong><p>overlapper tidsvinduet</p></article>
+              </div>
+              <div class="section-heading"><div><h2>Gæster</h2><p>Status, tids-overlap og kost</p></div></div>
+              <article class="card guest-list">
+                <div class="guest-row"><div><span class="avatar">AM</span><strong>Anna Madsen</strong><br /><span class="muted">Til stede · 14:00 → næste dag</span></div><div><span class="pill accent">Ja</span> <span class="pill">Vegetar</span></div></div>
+                <div class="guest-row"><div><span class="avatar">JM</span><strong>Jonas Møller</strong><br /><span class="muted">Kommer 17:30 · note om nødder</span></div><div><span class="pill warning">Måske</span> <span class="pill warning">Allergi</span></div></div>
+                <div class="guest-row"><div><span class="avatar">SL</span><strong>Sofie Lund</strong><br /><span class="muted">Til stede · 15:00 → næste dag</span></div><div><span class="pill accent">Ja</span></div></div>
+              </article>
+              <div class="section-heading"><div><h2>Ændringer efter Svar senest</h2><p>Kun ændringer der påvirker dette måltid</p></div></div>
+              <article class="card">
+                <div class="alert" style="margin-top:0"><span><strong>Jonas ændrede måltidssvar</strong><br /><span class="muted">Måske → Ja · fredag 18:42 · 2 t. 42 min. efter Svar senest</span></span><span class="pill warning">Efter Svar senest</span></div>
+                <div class="alert" style="margin-bottom:0"><span><strong>Jonas ændrede ankomsttid</strong><br /><span class="muted">19:30 → 17:30 · fredag 18:39 · påvirker forventet antal</span></span><span class="pill warning">Efter Svar senest</span></div>
+              </article>
+            </div>
+            <div class="guest-only" hidden>
+              <article class="card"><h2>Denne side er kun for admin</h2><p class="muted">Gæsten ser sin måltidsliste på eventlanding og har ikke adgang til andre gæsters data eller ændringsloggen.</p><button class="primary" data-go="overview" type="button">Tilbage til eventet</button></article>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="chat">
+            <div class="prototype-header"><div><p class="eyebrow">Event-chat</p><h1 style="font-size:clamp(30px,4vw,48px)">Chatvæg</h1><p class="lede">Fælles beskeder. Nyeste står nederst.</p></div></div>
+            <div class="grid two">
+              <article class="card chat-feed">
+                <div class="message"><small>Sofie · fredag 14:12</small>Jeg tager et par brætspil med 🎲</div>
+                <div class="message mine"><small>Dig · fredag 14:18</small>Perfekt! Jeg sørger for kaffe.</div>
+                <div class="message"><small>Jonas · fredag 16:03</small>Er der nogen, der kører fra stationen?</div>
+              </article>
+              <article class="card form-stack"><h2>Skriv en besked</h2><label>Besked<textarea id="chatInput" placeholder="Skriv til alle på eventet…"></textarea></label><button class="primary" id="sendChat" type="button">Send besked</button><p class="muted">MVP: ingen tråde, reaktioner eller push-notifikationer.</p></article>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <nav class="bottom-nav" id="mobileNav" aria-label="Mobil navigation"></nav>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script>
+      const state = { role: "admin", screen: "plan" };
+      const navByRole = {
+        admin: [
+          ["plan", "⌂", "Sideplan"],
+          ["deploy", "↑", "Deploy"],
+          ["overview", "▦", "Dashboard"],
+          ["detail", "◫", "Måltid"],
+          ["chat", "●", "Chat"]
+        ],
+        guest: [
+          ["plan", "⌂", "Sideplan"],
+          ["deploy", "↑", "Deploy"],
+          ["overview", "◉", "Mit event"],
+          ["chat", "●", "Chat"]
+        ]
+      };
+
+      const root = document.documentElement;
+      const toast = document.getElementById("toast");
+      let toastTimer;
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2100);
+      }
+
+      function renderNav() {
+        const markup = navByRole[state.role].map(([screen, icon, label]) =>
+          `<button class="nav-button ${state.screen === screen ? "active" : ""}" data-go="${screen}" type="button"><span>${icon}</span><span>${label}</span></button>`
+        ).join("");
+        document.getElementById("desktopNav").innerHTML = markup;
+        document.getElementById("mobileNav").innerHTML = markup;
+      }
+
+      function setScreen(screen) {
+        if (state.role === "guest" && screen === "detail") screen = "overview";
+        state.screen = screen;
+        document.querySelectorAll(".screen").forEach((element) => element.classList.toggle("active", element.dataset.screen === screen));
+        renderNav();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function setRole(role) {
+        state.role = role;
+        root.style.setProperty("--accent", role === "admin" ? "var(--admin)" : "var(--guest)");
+        root.style.setProperty("--accent-soft", role === "admin" ? "var(--admin-soft)" : "var(--guest-soft)");
+        document.querySelectorAll("[data-role]").forEach((button) => button.classList.toggle("active", button.dataset.role === role));
+        document.querySelectorAll(".admin-only").forEach((element) => element.hidden = role !== "admin");
+        document.querySelectorAll(".guest-only").forEach((element) => element.hidden = role !== "guest");
+        document.getElementById("quickRole").textContent = role === "admin" ? "Se som gæst" : "Se som admin";
+        const label = document.getElementById("viewRoleLabel");
+        if (label) label.textContent = role === "admin" ? "Admin prototype" : "Gæsteprototype";
+        if (role === "guest" && state.screen === "detail") state.screen = "overview";
+        renderNav();
+      }
+
+      document.addEventListener("click", (event) => {
+        const role = event.target.closest("[data-role]");
+        if (role) setRole(role.dataset.role);
+        const nav = event.target.closest("[data-go]");
+        if (nav) setScreen(nav.dataset.go);
+        const demo = event.target.closest("[data-demo-toast]");
+        if (demo) { event.preventDefault(); showToast(demo.dataset.demoToast); }
+        const status = event.target.closest(".status-button");
+        if (status) {
+          status.parentElement.querySelectorAll(".status-button").forEach((button) => button.classList.remove("active"));
+          status.classList.add("active");
+          showToast(`Svar gemt: ${status.textContent}`);
+        }
+      });
+
+      document.getElementById("quickRole").addEventListener("click", () => setRole(state.role === "admin" ? "guest" : "admin"));
+      document.getElementById("themeToggle").addEventListener("click", () => {
+        const light = root.dataset.theme !== "light";
+        root.dataset.theme = light ? "light" : "dark";
+        document.getElementById("themeToggle").textContent = light ? "☾" : "☀";
+      });
+      document.getElementById("sendChat").addEventListener("click", () => {
+        const input = document.getElementById("chatInput");
+        if (!input.value.trim()) return showToast("Skriv en besked først");
+        showToast("Beskeden er sendt"); input.value = "";
+      });
+
+      renderNav();
+      setRole("admin");
+    </script>
+  </body>
+</html>

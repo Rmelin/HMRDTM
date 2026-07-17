@@ -1,0 +1,51 @@
+name: hmrdtm
+
+services:
+  hmrdtm:
+    container_name: hmrdtm
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_PATH: /app/data/app.db
+      BACKUP_DIR: /app/backups
+    expose:
+      - "3000"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3000/api/health').then(response=>{if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./data:/app/data
+      - ./backups:/app/backups
+    mem_limit: 512m
+    cpus: 0.50
+    networks:
+      - hmrdtm_internal
+
+  cloudflared:
+    container_name: hmrdtm-cloudflared
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN skal sættes i .env}
+    depends_on:
+      hmrdtm:
+        condition: service_healthy
+    mem_limit: 128m
+    cpus: 0.25
+    networks:
+      - hmrdtm_internal
+
+networks:
+  hmrdtm_internal:
+    name: hmrdtm_internal
+    

@@ -1,0 +1,62 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1772019759895,
+      "tag": "0000_fine_catseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1783930200000,
+      "tag": "0001_mvp_cutoff",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1784102400000,
+      "tag": "0002_users_and_event_owners",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1784188800000,
+      "tag": "0003_guest_companions",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1784275200000,
+      "tag": "0004_event_companion_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1784361600000,
+      "tag": "0005_event_guest_list",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784448000000,
+      "tag": "0006_invited_guest_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1784534400000,
+      "tag": "0007_default_full_event_availability",
+      "breakpoints": true
+    }
+  ]
+}
