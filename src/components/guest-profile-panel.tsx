@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type AnswerStatus = "yes" | "no" | "maybe";
@@ -15,6 +15,10 @@ export function GuestProfilePanel({
   token,
   displayName: initialDisplayName,
   eventStatus: initialEventStatus,
+  contactEmail: initialContactEmail,
+  contactPhone: initialContactPhone,
+  shareEmail: initialShareEmail,
+  sharePhone: initialSharePhone,
   allowPartner,
   allowChildren,
   people: initialPeople
@@ -22,6 +26,10 @@ export function GuestProfilePanel({
   token: string;
   displayName: string;
   eventStatus: string;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  shareEmail: boolean;
+  sharePhone: boolean;
   allowPartner: boolean;
   allowChildren: boolean;
   people: Person[];
@@ -29,6 +37,10 @@ export function GuestProfilePanel({
   const router = useRouter();
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [eventStatus, setEventStatus] = useState<Status>(initialEventStatus as Status);
+  const [contactEmail, setContactEmail] = useState(initialContactEmail ?? "");
+  const [contactPhone, setContactPhone] = useState(initialContactPhone ?? "");
+  const [shareEmail, setShareEmail] = useState(initialShareEmail);
+  const [sharePhone, setSharePhone] = useState(initialSharePhone);
   const [people, setPeople] = useState(
     initialPeople.map((person) => ({
       ...person,
@@ -38,6 +50,11 @@ export function GuestProfilePanel({
   );
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [contactSaving, setContactSaving] = useState(false);
+  const [contactMessage, setContactMessage] = useState<string | null>(null);
+  const contactSaveQueue = useRef<Promise<void>>(Promise.resolve());
+  const contactSaveCount = useRef(0);
+  const latestContactSaveId = useRef(0);
   const [statusSaving, setStatusSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [addingType, setAddingType] = useState<CompanionType | null>(null);
@@ -105,6 +122,73 @@ export function GuestProfilePanel({
         : "Profilen er gemt"
     );
     router.refresh();
+  };
+
+  const saveContact = async ({
+    nextEmail = contactEmail,
+    nextPhone = contactPhone,
+    nextShareEmail = shareEmail,
+    nextSharePhone = sharePhone
+  }: {
+    nextEmail?: string;
+    nextPhone?: string;
+    nextShareEmail?: boolean;
+    nextSharePhone?: boolean;
+  } = {}) => {
+    const previous = { contactEmail, contactPhone, shareEmail, sharePhone };
+    const saveId = latestContactSaveId.current + 1;
+    latestContactSaveId.current = saveId;
+    setContactEmail(nextEmail);
+    setContactPhone(nextPhone);
+    setShareEmail(nextShareEmail);
+    setSharePhone(nextSharePhone);
+    contactSaveCount.current += 1;
+    setContactSaving(true);
+    setContactMessage(null);
+
+    const request = contactSaveQueue.current.then(() =>
+      fetch(`/api/guest/${token}/contact`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contactEmail: nextEmail,
+          contactPhone: nextPhone,
+          shareEmail: nextShareEmail,
+          sharePhone: nextSharePhone
+        })
+      })
+    );
+    contactSaveQueue.current = request.then(() => undefined, () => undefined);
+
+    try {
+      const response = await request;
+      const body = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (saveId === latestContactSaveId.current) {
+          setContactEmail(previous.contactEmail);
+          setContactPhone(previous.contactPhone);
+          setShareEmail(previous.shareEmail);
+          setSharePhone(previous.sharePhone);
+          setContactMessage(body?.error ?? "Kontaktoplysningerne kunne ikke gemmes");
+        }
+        return;
+      }
+      if (saveId === latestContactSaveId.current) {
+        setContactMessage("Kontaktvalgene er gemt automatisk");
+        router.refresh();
+      }
+    } catch {
+      if (saveId === latestContactSaveId.current) {
+        setContactEmail(previous.contactEmail);
+        setContactPhone(previous.contactPhone);
+        setShareEmail(previous.shareEmail);
+        setSharePhone(previous.sharePhone);
+        setContactMessage("Der kunne ikke oprettes forbindelse til serveren");
+      }
+    } finally {
+      contactSaveCount.current -= 1;
+      if (contactSaveCount.current === 0) setContactSaving(false);
+    }
   };
 
   const addCompanion = async () => {
@@ -230,6 +314,79 @@ export function GuestProfilePanel({
           <p className="helper-text">Kontakt den, der har inviteret dig, hvis du har brug for at tage partner eller børn med.</p>
         )}
         {companionMessage ? <p className="form-message">{companionMessage}</p> : null}
+        </div>
+        <div className={`companion-access ${shareEmail || sharePhone ? "is-enabled" : "is-disabled"}`}>
+          <div className="item-heading">
+            <div>
+              <span className="eyebrow">Frivillig telefonbog</span>
+              <h3>Del dine kontaktoplysninger</h3>
+              <p className="helper-text">
+                Kun de oplysninger, du vælger her, bliver synlige for andre med et gyldigt gæstelink til eventet.
+              </p>
+            </div>
+            <span className="badge accent">Gemmes automatisk</span>
+          </div>
+          <div className="form-grid">
+            <label>
+              <span className="field-label">E-mail</span>
+              <input
+                type="email"
+                value={contactEmail}
+                maxLength={254}
+                onChange={(event) => {
+                  setContactEmail(event.target.value);
+                  if (!event.target.value.trim()) setShareEmail(false);
+                }}
+                onBlur={(event) => {
+                  if (!(event.relatedTarget instanceof HTMLElement && event.relatedTarget.dataset.contactToggle)) {
+                    void saveContact();
+                  }
+                }}
+                placeholder="navn@example.dk"
+              />
+            </label>
+            <label>
+              <span className="field-label">Telefon</span>
+              <input
+                type="tel"
+                value={contactPhone}
+                maxLength={30}
+                onChange={(event) => {
+                  setContactPhone(event.target.value);
+                  if (!event.target.value.trim()) setSharePhone(false);
+                }}
+                onBlur={(event) => {
+                  if (!(event.relatedTarget instanceof HTMLElement && event.relatedTarget.dataset.contactToggle)) {
+                    void saveContact();
+                  }
+                }}
+                placeholder="+45 12 34 56 78"
+              />
+            </label>
+          </div>
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              data-contact-toggle="true"
+              checked={shareEmail}
+              disabled={contactSaving || !contactEmail.trim()}
+              onChange={(event) => void saveContact({ nextShareEmail: event.target.checked })}
+            />
+            <span><strong>Del min e-mail</strong><small>Vises i telefonbogen for dette event.</small></span>
+          </label>
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              data-contact-toggle="true"
+              checked={sharePhone}
+              disabled={contactSaving || !contactPhone.trim()}
+              onChange={(event) => void saveContact({ nextSharePhone: event.target.checked })}
+            />
+            <span><strong>Del mit telefonnummer</strong><small>Vises i telefonbogen for dette event.</small></span>
+          </label>
+          {contactMessage ? (
+            <p className={contactMessage.includes("gemt") ? "success" : "error"}>{contactMessage}</p>
+          ) : null}
         </div>
         {people.map((person) => (
           <div className="subcard stack" key={person.id}>

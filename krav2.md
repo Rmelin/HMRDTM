@@ -91,6 +91,10 @@ Den offentlige forside forklarer, at HMRDTM er skabt af Rasmus Melin Graasbøll 
 - Gæstelisten vises åbent øverst på gæstesiden med statusoptælling og en kompakt navneliste
 - Eventejeren kan under Eventindstillinger skjule gæstelisten for alle gæster
 - Gæstelisten viser aldrig invitationslinks, kostoplysninger eller andre private detaljer
+- Telefonbogen er separat fra gæstelisten og er kun tilgængelig via et gyldigt gæstelink til eventet
+- Gæster og eventledere kan frivilligt dele e-mail og telefon med alle eventets gæster
+- E-mail og telefon vælges hver for sig, er skjult som standard og kan kun ændres af personen selv
+- Gæstens kontaktfelter gemmes ved feltskift, og delingsvalg gemmes straks uden en separat gem-knap
 - ICS-download til kalender er tilgængelig i gæste-flow
 
 ## Validering og defaults

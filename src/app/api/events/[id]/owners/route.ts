@@ -7,6 +7,16 @@ import { db } from "@/lib/db";
 import { admins, eventOwners } from "@/lib/schema";
 
 const ownerSchema = z.object({ userId: z.string().uuid() });
+const contactSchema = z
+  .object({
+    userId: z.string().uuid(),
+    contactPhone: z.string().trim().max(30).regex(/^[0-9+() .-]*$/),
+    shareEmail: z.boolean(),
+    sharePhone: z.boolean()
+  })
+  .refine((value) => !value.sharePhone || Boolean(value.contactPhone), {
+    message: "Telefonnummer skal udfyldes, før det kan deles"
+  });
 
 async function authorizedEvent(eventId: string) {
   const user = await getCurrentUser();
@@ -30,6 +40,33 @@ export async function POST(request: Request, { params }: { params: { id: string 
     userId: user.id,
     createdAt: Date.now()
   }).onConflictDoNothing();
+  return NextResponse.json({ ok: true });
+}
+
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const access = await authorizedEvent(params.id);
+  if ("error" in access) return access.error;
+
+  const payload = contactSchema.safeParse(await request.json().catch(() => null));
+  if (!payload.success) {
+    return NextResponse.json({ error: "Kontrollér kontaktoplysningerne" }, { status: 400 });
+  }
+  if (payload.data.userId !== access.user.id) {
+    return NextResponse.json({ error: "Du kan kun ændre din egen kontaktprofil" }, { status: 403 });
+  }
+
+  await db
+    .update(eventOwners)
+    .set({
+      contactPhone: payload.data.contactPhone || null,
+      shareEmail: payload.data.shareEmail,
+      sharePhone: payload.data.sharePhone
+    })
+    .where(and(
+      eq(eventOwners.eventId, params.id),
+      eq(eventOwners.userId, access.user.id)
+    ));
+
   return NextResponse.json({ ok: true });
 }
 

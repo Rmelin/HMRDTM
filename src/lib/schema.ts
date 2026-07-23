@@ -46,6 +46,9 @@ export const eventOwners = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => admins.id, { onDelete: "cascade" }),
+    contactPhone: text("contact_phone"),
+    shareEmail: integer("share_email", { mode: "boolean" }).notNull().default(false),
+    sharePhone: integer("share_phone", { mode: "boolean" }).notNull().default(false),
     createdAt: integer("created_at", { mode: "number" }).notNull()
   },
   (table) => ({
@@ -86,6 +89,10 @@ export const guestGroups = sqliteTable("guest_groups", {
   displayName: text("display_name").notNull(),
   inviteToken: text("invite_token").notNull().unique(),
   eventStatus: text("event_status").notNull(),
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  shareEmail: integer("share_email", { mode: "boolean" }).notNull().default(false),
+  sharePhone: integer("share_phone", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "number" }).notNull(),
   lastSeenAt: integer("last_seen_at", { mode: "number" })
 });

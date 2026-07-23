@@ -6,11 +6,14 @@ import { GuestAvailabilityPanel } from "@/components/guest-availability-panel";
 import { GuestChatPanel } from "@/components/guest-chat-panel";
 import { GuestMealsPanel } from "@/components/guest-meals-panel";
 import { GuestProfilePanel } from "@/components/guest-profile-panel";
+import { buildContactBook } from "@/lib/contact";
 import { db } from "@/lib/db";
 import { formatDateTime } from "@/lib/datetime";
 import { getGuestContext } from "@/lib/guest";
 import {
+  admins,
   chatMessages,
+  eventOwners,
   guestAvailability,
   guestGroups,
   guestResponses,
@@ -23,7 +26,16 @@ export default async function GuestPage({ params }: { params: { token: string } 
   const context = await getGuestContext(params.token);
   if (!context) return notFound();
 
-  const [programList, mealsList, peopleList, availability, chatList, guestList] = await Promise.all([
+  const [
+    programList,
+    mealsList,
+    peopleList,
+    availability,
+    chatList,
+    guestList,
+    ownerContacts,
+    guestContacts
+  ] = await Promise.all([
     db.select().from(programItems).where(eq(programItems.eventId, context.event.id)).orderBy(programItems.startsAt),
     db.select().from(meals).where(eq(meals.eventId, context.event.id)).orderBy(meals.startsAt),
     db.select().from(people).where(eq(people.groupId, context.group.id)),
@@ -49,7 +61,31 @@ export default async function GuestPage({ params }: { params: { token: string } 
           .from(guestGroups)
           .where(eq(guestGroups.eventId, context.event.id))
           .orderBy(guestGroups.createdAt)
-      : Promise.resolve([])
+      : Promise.resolve([]),
+    db
+      .select({
+        id: admins.id,
+        name: admins.name,
+        email: admins.email,
+        contactPhone: eventOwners.contactPhone,
+        shareEmail: eventOwners.shareEmail,
+        sharePhone: eventOwners.sharePhone
+      })
+      .from(eventOwners)
+      .innerJoin(admins, eq(eventOwners.userId, admins.id))
+      .where(eq(eventOwners.eventId, context.event.id)),
+    db
+      .select({
+        id: guestGroups.id,
+        name: guestGroups.displayName,
+        email: guestGroups.contactEmail,
+        contactPhone: guestGroups.contactPhone,
+        shareEmail: guestGroups.shareEmail,
+        sharePhone: guestGroups.sharePhone
+      })
+      .from(guestGroups)
+      .where(eq(guestGroups.eventId, context.event.id))
+      .orderBy(guestGroups.createdAt)
   ]);
 
   const personIds = peopleList.map((person) => person.id);
@@ -70,6 +106,26 @@ export default async function GuestPage({ params }: { params: { token: string } 
     invited: otherGuests.filter((group) => group.eventStatus === "invited").length,
     no: otherGuests.filter((group) => group.eventStatus === "no").length
   };
+  const phoneBook = buildContactBook([
+    ...ownerContacts.map((owner) => ({
+      id: `owner:${owner.id}`,
+      name: owner.name || "Eventleder",
+      role: "Eventleder" as const,
+      email: owner.email,
+      phone: owner.contactPhone,
+      shareEmail: owner.shareEmail,
+      sharePhone: owner.sharePhone
+    })),
+    ...guestContacts.map((guest) => ({
+      id: `guest:${guest.id}`,
+      name: guest.name,
+      role: "Gæst" as const,
+      email: guest.email,
+      phone: guest.contactPhone,
+      shareEmail: guest.shareEmail,
+      sharePhone: guest.sharePhone
+    }))
+  ]);
 
   return (
     <div className="app-view guest-view">
@@ -118,11 +174,45 @@ export default async function GuestPage({ params }: { params: { token: string } 
         <span className="badge accent">{responses.length} individuelle måltidsafvigelser</span>
       </section>
 
+      <CollapsibleSection title={`Telefonbog (${phoneBook.length})`} defaultOpen>
+        <p className="helper-text">
+          Kontaktoplysninger vises kun, når personen selv har valgt at dele dem med eventets gæster.
+        </p>
+        {phoneBook.length > 0 ? (
+          <div className="list">
+            {phoneBook.map((contact) => (
+              <article className="list-item" key={contact.id}>
+                <div className="item-heading">
+                  <strong>{contact.name}</strong>
+                  <span className={`badge ${contact.role === "Eventleder" ? "accent" : ""}`}>
+                    {contact.role}
+                  </span>
+                </div>
+                <div className="button-row" style={{ marginTop: 0 }}>
+                  {contact.email ? (
+                    <a className="button ghost" href={`mailto:${contact.email}`}>✉ {contact.email}</a>
+                  ) : null}
+                  {contact.phone ? (
+                    <a className="button ghost" href={`tel:${contact.phone}`}>☎ {contact.phone}</a>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">Ingen har valgt at dele kontaktoplysninger endnu.</div>
+        )}
+      </CollapsibleSection>
+
       <CollapsibleSection title="1. Deltagelse og kost" defaultOpen>
         <GuestProfilePanel
           token={params.token}
           displayName={context.group.displayName}
           eventStatus={context.group.eventStatus}
+          contactEmail={context.group.contactEmail}
+          contactPhone={context.group.contactPhone}
+          shareEmail={context.group.shareEmail}
+          sharePhone={context.group.sharePhone}
           allowPartner={context.event.allowPartner}
           allowChildren={context.event.allowChildren}
           people={peopleList}
