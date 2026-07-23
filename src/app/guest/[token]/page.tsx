@@ -1,4 +1,5 @@
 import { asc, eq, inArray } from "drizzle-orm";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { CollapsibleSection } from "@/components/collapsible-section";
@@ -18,6 +19,10 @@ import {
   people,
   programItems
 } from "@/lib/schema";
+
+export const metadata: Metadata = {
+  title: "Invitation"
+};
 
 export default async function GuestPage({ params }: { params: { token: string } }) {
   const context = await getGuestContext(params.token);
