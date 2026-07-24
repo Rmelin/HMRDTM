@@ -57,6 +57,22 @@ export default async function GuestPage({ params }: { params: { token: string } 
     ? await db.select().from(guestResponses).where(inArray(guestResponses.personId, personIds))
     : [];
   const visibleProgram = programList.filter((item) => item.isVisible);
+  const scheduleItems = [
+    ...mealsList.map((meal) => ({
+      id: meal.id,
+      type: "meal" as const,
+      name: meal.name,
+      startsAt: meal.startsAt,
+      endsAt: meal.endsAt
+    })),
+    ...visibleProgram.map((item) => ({
+      id: item.id,
+      type: "program" as const,
+      name: item.name,
+      startsAt: item.startsAt,
+      endsAt: item.endsAt
+    }))
+  ];
   const otherGuests = guestList.filter((group) => group.id !== context.group.id);
   const guestStatus: Record<string, string> = {
     yes: "Deltager",
@@ -135,6 +151,7 @@ export default async function GuestPage({ params }: { params: { token: string } 
           availability={availability}
           eventStartsAt={context.event.startsAt}
           eventEndsAt={context.event.endsAt}
+          scheduleItems={scheduleItems}
         />
       </CollapsibleSection>
 

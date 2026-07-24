@@ -36,8 +36,9 @@ Den offentlige forside forklarer, at HMRDTM er skabt af Rasmus Melin Graasbøll 
 
 ## Måltider (Admin)
 - Opret/ret/slet måltider med navn, dato, start/slut, "Svar senest" og beskrivelse
-- Admin kan klikke eller trække i en kalender for at vælge måltidets tidsrum; måltider skal ligge inden for eventets start og slut
-- Programpunkter oprettes og redigeres i samme kalenderflow og skal også ligge inden for eventets start og slut
+- Admin har én samlet kalender, som viser både måltider og programpunkter med hver sin farve
+- Admin kan klikke eller trække i den samlede kalender og vælger derefter måltid eller programpunkt
+- Måltider og programpunkter skal ligge inden for eventets start og slut
 - Slut auto-sættes til +1 time, hvis ikke udfyldt
 - Bulk-opret standardmåltider pr. dag (morgenmad/frokost/aftensmad)
 - Måltidsoverblik viser deltager, måske og forventet baseret på overlap
@@ -69,6 +70,7 @@ Den offentlige forside forklarer, at HMRDTM er skabt af Rasmus Melin Graasbøll 
 - Gæster kan vælge hele eventets tidsrum eller angive flere komme/gå-tidsrum
 - Hvert tidsrum skal ligge inden for eventet og må ikke overlappe et andet tidsrum
 - Alle tidsrum bruges til overlap-beregning for måltider
+- Komme/gå-kalenderen viser deltagelsestider, måltider og synlige programpunkter i ét samlet layout
 
 ## Kost og noter
 - Gæster vælger kosttype + noter

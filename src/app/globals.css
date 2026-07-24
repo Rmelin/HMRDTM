@@ -236,6 +236,18 @@ input[type="checkbox"] { width: 24px; min-height: 24px; accent-color: var(--acce
 .attendance-calendar-window { cursor: default; pointer-events: none; background: color-mix(in srgb, var(--success), #111 18%); border-color: color-mix(in srgb, var(--success), #fff 15%); }
 .calendar-program { border-color: color-mix(in srgb, var(--warning), #fff 8%); background: color-mix(in srgb, var(--warning), #111 35%); }
 .calendar-program.is-hidden { border-style: dashed; opacity: .58; }
+.shared-schedule-scroll { max-height: 560px; }
+.calendar-attendance { position: absolute; z-index: 3; right: 3px; left: 3px; overflow: hidden; padding: 4px 6px; border: 1px solid color-mix(in srgb, var(--success), #fff 12%); border-radius: 9px; color: color-mix(in srgb, var(--success), #fff 18%); background: color-mix(in srgb, var(--success), transparent 78%); font-size: .68rem; font-weight: 850; pointer-events: none; }
+.calendar-schedule-item.calendar-meal-lane { right: calc(50% + 2px); left: 5px; }
+.calendar-schedule-item.calendar-program-lane { right: 5px; left: calc(50% + 2px); }
+.attendance-calendar-day .calendar-schedule-item { cursor: default; pointer-events: none; }
+.calendar-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.calendar-legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .78rem; font-weight: 800; }
+.legend-swatch { display: inline-block; width: 13px; height: 13px; border: 1px solid transparent; border-radius: 4px; }
+.legend-swatch.attendance { border-color: var(--success); background: color-mix(in srgb, var(--success), transparent 68%); }
+.legend-swatch.meal { border-color: var(--accent); background: color-mix(in srgb, var(--accent), #111 18%); }
+.legend-swatch.program { border-color: var(--warning); background: color-mix(in srgb, var(--warning), #111 35%); }
+.legend-swatch.hidden { border-color: var(--warning); border-style: dashed; background: color-mix(in srgb, var(--warning), transparent 82%); opacity: .65; }
 .calendar-selection { position: absolute; z-index: 5; right: 5px; left: 5px; overflow: hidden; padding: 4px 7px; border: 1px solid var(--warning); border-radius: 8px; color: #17191d; background: color-mix(in srgb, var(--warning), transparent 12%); font-size: .72rem; font-weight: 850; pointer-events: none; }
 .calendar-editor { position: sticky; bottom: 10px; z-index: 12; border-color: color-mix(in srgb, var(--accent), transparent 30%); box-shadow: var(--shadow); }
 

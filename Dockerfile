@@ -6,6 +6,7 @@ ARG NODE_VERSION=24
 FROM node:${NODE_VERSION}-alpine AS build
 
 WORKDIR /usr/src/app
+ENV TZ=Europe/Copenhagen
 
 # better-sqlite3 skal på nogle ARM64/Alpine-systemer kompileres lokalt.
 RUN apk add --no-cache python3 make g++
@@ -25,7 +26,8 @@ RUN npm prune --omit=dev
 FROM node:${NODE_VERSION}-alpine AS final
 
 WORKDIR /usr/src/app
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+  TZ=Europe/Copenhagen
 
 # su-exec lader entrypointet rette mount-rettigheder som root og derefter køre
 # migration og server som den begrænsede node-bruger.

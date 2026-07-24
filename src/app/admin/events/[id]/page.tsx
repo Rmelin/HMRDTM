@@ -1,15 +1,14 @@
-import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { AdminScheduleCalendar } from "@/components/admin-schedule-calendar";
 import { ChatPanel } from "@/components/chat-panel";
 import { CollapsibleSection } from "@/components/collapsible-section";
 import { EventEditForm } from "@/components/event-edit-form";
 import { EventOwnersForm } from "@/components/event-owners-form";
 import { GuestGroupForm } from "@/components/guest-group-form";
 import { GuestGroupRow } from "@/components/guest-group-row";
-import { MealCalendar } from "@/components/meal-calendar";
-import { ProgramCalendar } from "@/components/program-calendar";
 import { getCurrentUser, getEventForUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDateTime } from "@/lib/datetime";
@@ -177,12 +176,12 @@ export default async function AdminEventPage({ params }: { params: { id: string 
         )}
       </CollapsibleSection>
 
-      <CollapsibleSection title="Opret og redigér måltider">
-        <MealCalendar event={event} meals={mealsList} />
-      </CollapsibleSection>
-
-      <CollapsibleSection title="Program">
-        <ProgramCalendar event={event} items={programList} />
+      <CollapsibleSection title="Opret og redigér måltider og program" defaultOpen>
+        <AdminScheduleCalendar
+          event={event}
+          meals={mealsList}
+          programItems={programList}
+        />
       </CollapsibleSection>
 
       <CollapsibleSection title="Eventindstillinger">
