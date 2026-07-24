@@ -126,7 +126,7 @@ export default async function AdminEventPage({ params }: { params: { id: string 
                   const changes = changeCountByMeal.get(meal.id) ?? 0;
                   return (
                     <article className="meal-card" key={meal.id}>
-                      <div className="item-heading"><div><h3>{meal.name}</h3><span className="muted">{new Date(meal.startsAt).toLocaleString("da-DK")}</span></div>{changes > 0 ? <span className="badge warning">⚠ {changes}</span> : null}</div>
+                      <div className="item-heading"><div><h3>{meal.name}</h3><span className="muted">{formatDateTime(meal.startsAt)}</span></div>{changes > 0 ? <span className="badge warning">⚠ {changes}</span> : null}</div>
                       <div className="count-row"><span className="count yes" title="Ja, inkl. eventstatus">Ja {stats.yes}</span><span className="count maybe" title="Måske, inkl. eventstatus">? {stats.maybe}</span><span className="count no" title="Nej, inkl. eventstatus">Nej {stats.no}</span><span className="count" title="Afventer eventstatus">∅ {stats.unspecified}</span></div>
                       <div><strong>Forventet: {stats.expected}</strong><div className="muted">{stats.expectedAdults} voksne · {stats.expectedChildren} børn</div></div>
                       <Link className="button ghost" href={`/admin/events/${event.id}/meals/${meal.id}`}>Se detaljer →</Link>

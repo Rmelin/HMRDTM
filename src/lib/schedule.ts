@@ -15,16 +15,7 @@ export type ScheduleSegment<T extends ScheduleItem = ScheduleItem> = T & {
   segmentEnd: number;
 };
 
-export function localDayStart(value: number) {
-  const date = new Date(value);
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-}
-
-export function addLocalDays(value: number, days: number) {
-  const date = new Date(value);
-  date.setDate(date.getDate() + days);
-  return date.getTime();
-}
+export { addLocalDays, localDayStart };
 
 export function calendarDays(startsAt: number, endsAt: number) {
   const days: number[] = [];
@@ -39,7 +30,10 @@ export function calendarDays(startsAt: number, endsAt: number) {
 }
 
 export function minutesAfterDayStart(value: number, dayStart: number) {
-  return Math.round((value - dayStart) / 60_000);
+  if (value <= dayStart) return 0;
+  if (value >= addLocalDays(dayStart, 1)) return 24 * 60;
+  const parts = getLocalDateTimeParts(value);
+  return parts.hour * 60 + parts.minute + Math.round(parts.second / 60);
 }
 
 export function splitScheduleItems<T extends ScheduleItem>(
@@ -57,3 +51,8 @@ export function splitScheduleItems<T extends ScheduleItem>(
     })
   );
 }
+import {
+  addLocalDays,
+  getLocalDateTimeParts,
+  localDayStart
+} from "@/lib/datetime";

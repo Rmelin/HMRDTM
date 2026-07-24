@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { formatDateTime, formatTime } from "@/lib/datetime";
+
 type Meal = { id: string; name: string; startsAt: number; endsAt: number; cutoffAt: number };
 type Person = { id: string; name: string; type: string };
 type Response = { personId: string; mealId: string; status: string };
@@ -61,10 +63,10 @@ export function GuestMealsPanel({
           <div className="item-heading">
             <div>
               <h3>{meal.name}</h3>
-              <span className="muted">{new Date(meal.startsAt).toLocaleString("da-DK")} – {new Date(meal.endsAt).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}</span>
+              <span className="muted">{formatDateTime(meal.startsAt)} – {formatTime(meal.endsAt)}</span>
             </div>
             <span className={`badge ${Date.now() > meal.cutoffAt ? "warning" : ""}`}>
-              {Date.now() > meal.cutoffAt ? "Svar senest er passeret" : `Svar senest ${new Date(meal.cutoffAt).toLocaleString("da-DK")}`}
+              {Date.now() > meal.cutoffAt ? "Svar senest er passeret" : `Svar senest ${formatDateTime(meal.cutoffAt)}`}
             </span>
           </div>
           {people.map((person) => {

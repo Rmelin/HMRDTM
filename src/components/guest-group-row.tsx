@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { GuestAvailabilityForm } from "@/components/guest-availability-form";
 import { PersonForm } from "@/components/person-form";
 import { PersonRow } from "@/components/person-row";
+import { formatDateTime } from "@/lib/datetime";
 
 type Person = { id: string; name: string; type: string; dietType: string | null; dietNotes: string | null };
 type Availability = { comesAt: number | null; leavesAt: number | null };
@@ -44,7 +45,7 @@ export function GuestGroupRow({ group, people, availability, eventStartsAt, even
   return (
     <details className="list-item">
       <summary className="item-heading" style={{ cursor: "pointer" }}>
-        <div><strong>{group.displayName}</strong><div className="muted">{group.lastSeenAt ? `Senest set ${new Date(group.lastSeenAt).toLocaleString("da-DK")}` : "Invitation ikke åbnet"}</div></div>
+        <div><strong>{group.displayName}</strong><div className="muted">{group.lastSeenAt ? `Senest set ${formatDateTime(group.lastSeenAt)}` : "Invitation ikke åbnet"}</div></div>
         <div className="tag-row" style={{ marginTop: 0 }}>
           <span className="badge">Event: {status[group.eventStatus] ?? "Inviterede"}</span>
           <span className="badge">{people.length} person(er)</span>

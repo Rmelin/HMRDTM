@@ -7,7 +7,7 @@ import { GuestChatPanel } from "@/components/guest-chat-panel";
 import { GuestMealsPanel } from "@/components/guest-meals-panel";
 import { GuestProfilePanel } from "@/components/guest-profile-panel";
 import { db } from "@/lib/db";
-import { formatDateTime } from "@/lib/datetime";
+import { formatDateTime, formatTime } from "@/lib/datetime";
 import { getGuestContext } from "@/lib/guest";
 import {
   chatMessages,
@@ -164,7 +164,7 @@ export default async function GuestPage({ params }: { params: { token: string } 
           <div className="list">
             {visibleProgram.map((item) => (
               <article className="list-item" key={item.id}>
-                <div className="item-heading"><strong>{item.name}</strong><span className="badge">{new Date(item.startsAt).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}</span></div>
+                <div className="item-heading"><strong>{item.name}</strong><span className="badge">{formatTime(item.startsAt)}</span></div>
                 {item.description ? <p>{item.description}</p> : null}
               </article>
             ))}

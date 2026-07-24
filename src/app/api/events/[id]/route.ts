@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { events, guestAvailability, guestGroups } from "@/lib/schema";
 import { getCurrentUser, getEventForUser } from "@/lib/auth";
+import { parseDateTimeInput } from "@/lib/datetime";
 
 const schema = z.object({
   title: z.string().min(1).optional(),
@@ -61,11 +62,11 @@ export async function PUT(
   if (payload.data.description !== undefined)
     update.description = payload.data.description;
   if (payload.data.startsAt)
-    update.startsAt = new Date(payload.data.startsAt).getTime();
+    update.startsAt = parseDateTimeInput(payload.data.startsAt);
   if (payload.data.endsAt)
-    update.endsAt = new Date(payload.data.endsAt).getTime();
+    update.endsAt = parseDateTimeInput(payload.data.endsAt);
   if (payload.data.signupDeadlineAt)
-    update.signupDeadlineAt = new Date(payload.data.signupDeadlineAt).getTime();
+    update.signupDeadlineAt = parseDateTimeInput(payload.data.signupDeadlineAt);
   if (payload.data.allowPartner !== undefined)
     update.allowPartner = payload.data.allowPartner;
   if (payload.data.allowChildren !== undefined)
@@ -79,7 +80,17 @@ export async function PUT(
 
   const nextStartsAt = (update.startsAt as number | undefined) ?? existingEvent.startsAt;
   const nextEndsAt = (update.endsAt as number | undefined) ?? existingEvent.endsAt;
-  if (!nextStartsAt || !nextEndsAt || nextEndsAt <= nextStartsAt) {
+  const nextSignupDeadlineAt =
+    (update.signupDeadlineAt as number | undefined) ??
+    existingEvent.signupDeadlineAt;
+  if (
+    !Number.isFinite(nextStartsAt) ||
+    !Number.isFinite(nextEndsAt) ||
+    !Number.isFinite(nextSignupDeadlineAt)
+  ) {
+    return NextResponse.json({ error: "Ugyldigt tidspunkt" }, { status: 400 });
+  }
+  if (nextEndsAt <= nextStartsAt) {
     return NextResponse.json({ error: "Slut skal være efter start" }, { status: 400 });
   }
 

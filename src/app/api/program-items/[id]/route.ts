@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { events, programItems } from "@/lib/schema";
 import { canAccessEvent, getCurrentUser } from "@/lib/auth";
+import { parseDateTimeInput } from "@/lib/datetime";
 import { validateEventItemWindow } from "@/lib/meal-window";
 
 const schema = z.object({
@@ -53,12 +54,15 @@ export async function PUT(
   if (payload.data.isVisible !== undefined)
     update.isVisible = payload.data.isVisible;
   if (payload.data.startsAt)
-    update.startsAt = new Date(payload.data.startsAt).getTime();
+    update.startsAt = parseDateTimeInput(payload.data.startsAt);
   if (payload.data.endsAt)
-    update.endsAt = new Date(payload.data.endsAt).getTime();
+    update.endsAt = parseDateTimeInput(payload.data.endsAt);
 
   const nextStartsAt = (update.startsAt as number | undefined) ?? item.startsAt;
   const nextEndsAt = (update.endsAt as number | undefined) ?? item.endsAt;
+  if (!Number.isFinite(nextStartsAt) || !Number.isFinite(nextEndsAt)) {
+    return NextResponse.json({ error: "Ugyldigt tidspunkt" }, { status: 400 });
+  }
   const windowError = validateEventItemWindow(
     { startsAt: nextStartsAt, endsAt: nextEndsAt },
     event,

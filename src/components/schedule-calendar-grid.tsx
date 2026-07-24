@@ -2,7 +2,11 @@
 
 import { PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { formatTime } from "@/lib/datetime";
+import {
+  EVENT_TIME_ZONE,
+  formatTime,
+  localDateTimeAtMinutes
+} from "@/lib/datetime";
 import {
   calendarDays,
   minutesAfterDayStart,
@@ -140,8 +144,8 @@ export function ScheduleCalendarGrid({
     pointerEvent.currentTarget.releasePointerCapture(pointerEvent.pointerId);
     setSelection(null);
     onCreateRange(
-      selection.dayStart + startMinute * 60_000,
-      selection.dayStart + endMinute * 60_000
+      localDateTimeAtMinutes(selection.dayStart, startMinute),
+      localDateTimeAtMinutes(selection.dayStart, endMinute)
     );
   }
 
@@ -171,13 +175,15 @@ export function ScheduleCalendarGrid({
           <div className="calendar-day-title" key={`title-${dayStart}`}>
             <strong>
               {new Date(dayStart).toLocaleDateString("da-DK", {
-                weekday: "short"
+                weekday: "short",
+                timeZone: EVENT_TIME_ZONE
               })}
             </strong>
             <span>
               {new Date(dayStart).toLocaleDateString("da-DK", {
                 day: "numeric",
-                month: "short"
+                month: "short",
+                timeZone: EVENT_TIME_ZONE
               })}
             </span>
           </div>
@@ -236,10 +242,12 @@ export function ScheduleCalendarGrid({
                         ) * PIXELS_PER_MINUTE,
                       height: Math.max(
                         24,
-                        minutesAfterDayStart(
-                          segment.segmentEnd,
-                          segment.segmentStart
-                        ) * PIXELS_PER_MINUTE
+                        (minutesAfterDayStart(segment.segmentEnd, dayStart) -
+                          minutesAfterDayStart(
+                            segment.segmentStart,
+                            dayStart
+                          )) *
+                          PIXELS_PER_MINUTE
                       )
                     }}
                   >
@@ -267,10 +275,12 @@ export function ScheduleCalendarGrid({
                       ) * PIXELS_PER_MINUTE,
                     height: Math.max(
                       24,
-                      minutesAfterDayStart(
-                        segment.segmentEnd,
-                        segment.segmentStart
-                      ) * PIXELS_PER_MINUTE
+                      (minutesAfterDayStart(segment.segmentEnd, dayStart) -
+                        minutesAfterDayStart(
+                          segment.segmentStart,
+                          dayStart
+                        )) *
+                        PIXELS_PER_MINUTE
                     )
                   };
                   const content = (

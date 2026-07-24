@@ -4,8 +4,8 @@ export function parseAvailability(
 ):
   | { comesAt: number | null; leavesAt: number | null }
   | { error: string } {
-  const comesAt = input.comesAt ? new Date(input.comesAt).getTime() : null;
-  const leavesAt = input.leavesAt ? new Date(input.leavesAt).getTime() : null;
+  const comesAt = input.comesAt ? parseDateTimeInput(input.comesAt) : null;
+  const leavesAt = input.leavesAt ? parseDateTimeInput(input.leavesAt) : null;
 
   if (
     (comesAt !== null && !Number.isFinite(comesAt)) ||
@@ -54,3 +54,4 @@ export function parseAvailabilityWindows(
 
   return { windows: sorted } as const;
 }
+import { parseDateTimeInput } from "@/lib/datetime";

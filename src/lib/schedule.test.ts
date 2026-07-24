@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { parseLocalDateTimeInput } from "./datetime";
 import {
   addLocalDays,
   calendarDays,
@@ -9,25 +10,25 @@ import {
 } from "@/lib/schedule";
 
 test("opretter én kalenderkolonne pr. lokal eventdag", () => {
-  const startsAt = new Date(2026, 6, 24, 18, 0).getTime();
-  const endsAt = new Date(2026, 6, 26, 10, 0).getTime();
+  const startsAt = parseLocalDateTimeInput("2026-07-24T18:00");
+  const endsAt = parseLocalDateTimeInput("2026-07-26T10:00");
 
   assert.deepEqual(calendarDays(startsAt, endsAt), [
-    new Date(2026, 6, 24).getTime(),
-    new Date(2026, 6, 25).getTime(),
-    new Date(2026, 6, 26).getTime()
+    parseLocalDateTimeInput("2026-07-24T00:00"),
+    parseLocalDateTimeInput("2026-07-25T00:00"),
+    parseLocalDateTimeInput("2026-07-26T00:00")
   ]);
 });
 
 test("deler et punkt over midnat i én blok pr. dag", () => {
-  const firstDay = new Date(2026, 6, 24).getTime();
+  const firstDay = parseLocalDateTimeInput("2026-07-24T00:00");
   const secondDay = addLocalDays(firstDay, 1);
   const item = {
     id: "program-1",
     type: "program" as const,
     name: "Natprogram",
-    startsAt: new Date(2026, 6, 24, 23, 0).getTime(),
-    endsAt: new Date(2026, 6, 25, 1, 0).getTime()
+    startsAt: parseLocalDateTimeInput("2026-07-24T23:00"),
+    endsAt: parseLocalDateTimeInput("2026-07-25T01:00")
   };
 
   const segments = splitScheduleItems([item], [firstDay, secondDay]);
@@ -51,7 +52,7 @@ test("deler et punkt over midnat i én blok pr. dag", () => {
 });
 
 test("udelader punkter uden for de viste dage", () => {
-  const day = localDayStart(new Date(2026, 6, 24, 12, 0).getTime());
+  const day = localDayStart(parseLocalDateTimeInput("2026-07-24T12:00"));
   const item = {
     id: "meal-1",
     type: "meal" as const,

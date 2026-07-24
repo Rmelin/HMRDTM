@@ -99,6 +99,7 @@ Den offentlige forside forklarer, at HMRDTM er skabt af Rasmus Melin Graasbøll 
 - Slut skal være efter start for events og begivenheder
 - Måltider slut skal være efter start
 - "Svar senest", sluttid og overlap håndteres server-side og i UI
+- Alle indtastede og viste eventtider fortolkes i `Europe/Copenhagen`, mens databasen gemmer Unix-tid; både sommer- og vintertid skal bevare det klokkeslæt brugeren indtastede
 
 ## UI
 - Standard darkmode med mulighed for light

@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { ScheduleCalendarGrid } from "@/components/schedule-calendar-grid";
-import { toLocalDateTimeInput } from "@/lib/datetime";
+import {
+  parseDateTimeInput,
+  toLocalDateTimeInput
+} from "@/lib/datetime";
 import { ScheduleItem } from "@/lib/schedule";
 
 type Availability = { comesAt: number | null; leavesAt: number | null };
@@ -38,8 +41,8 @@ export function AvailabilityWindowsEditor({
   const [saving, setSaving] = useState(false);
 
   const attendanceWindows = windows.flatMap((window, index) => {
-    const startsAt = new Date(window.comesAt).getTime();
-    const endsAt = new Date(window.leavesAt).getTime();
+    const startsAt = parseDateTimeInput(window.comesAt);
+    const endsAt = parseDateTimeInput(window.leavesAt);
     if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || endsAt <= startsAt) return [];
     return [{
       id: `attendance-${index}`,

@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { events, programItems } from "@/lib/schema";
 import { getCurrentUser, getEventForUser } from "@/lib/auth";
+import { parseDateTimeInput } from "@/lib/datetime";
 import { validateEventItemWindow } from "@/lib/meal-window";
 
 const schema = z.object({
@@ -35,10 +36,13 @@ export async function POST(
     return NextResponse.json({ error: "Ugyldig input" }, { status: 400 });
   }
 
-  const startsAt = new Date(payload.data.startsAt);
-  const endsAt = new Date(payload.data.endsAt);
+  const startsAt = parseDateTimeInput(payload.data.startsAt);
+  const endsAt = parseDateTimeInput(payload.data.endsAt);
+  if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt)) {
+    return NextResponse.json({ error: "Ugyldigt tidspunkt" }, { status: 400 });
+  }
   const windowError = validateEventItemWindow(
-    { startsAt: startsAt.getTime(), endsAt: endsAt.getTime() },
+    { startsAt, endsAt },
     event,
     "Programpunktet"
   );
@@ -49,8 +53,8 @@ export async function POST(
     id,
     eventId: params.id,
     name: payload.data.name,
-    startsAt: startsAt.getTime(),
-    endsAt: endsAt.getTime(),
+    startsAt,
+    endsAt,
     description: payload.data.description ?? null,
     isVisible: payload.data.isVisible
   });

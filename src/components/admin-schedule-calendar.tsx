@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { ScheduleCalendarGrid } from "@/components/schedule-calendar-grid";
-import { toLocalDateTimeInput } from "@/lib/datetime";
+import {
+  formatDateTime,
+  formatLocalDate,
+  parseDateTimeInput,
+  toLocalDateTimeInput
+} from "@/lib/datetime";
 import {
   validateEventItemWindow,
   validateMealWindow
@@ -46,14 +51,6 @@ type Draft = {
   description: string;
   isVisible: boolean;
 };
-
-function dateForApi(value: number) {
-  const date = new Date(value);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 export function AdminScheduleCalendar({
   event,
@@ -139,8 +136,8 @@ export function AdminScheduleCalendar({
   async function save() {
     if (!draft) return;
     setError(null);
-    const startsAt = new Date(draft.startsAt).getTime();
-    const endsAt = new Date(draft.endsAt).getTime();
+    const startsAt = parseDateTimeInput(draft.startsAt);
+    const endsAt = parseDateTimeInput(draft.endsAt);
     const windowError =
       draft.type === "meal"
         ? validateMealWindow({ startsAt, endsAt }, event)
@@ -180,7 +177,7 @@ export function AdminScheduleCalendar({
           isMeal
             ? {
                 name: draft.name.trim(),
-                date: dateForApi(startsAt),
+                date: formatLocalDate(startsAt),
                 startsAt: draft.startsAt,
                 endsAt: draft.endsAt,
                 cutoffAt: draft.cutoffAt || undefined,
@@ -373,9 +370,8 @@ export function AdminScheduleCalendar({
             </label>
           </div>
           <p className="helper-text">
-            Punktet skal ligge mellem{" "}
-            {new Date(event.startsAt).toLocaleString("da-DK")} og{" "}
-            {new Date(event.endsAt).toLocaleString("da-DK")}.
+            Punktet skal ligge mellem {formatDateTime(event.startsAt)} og{" "}
+            {formatDateTime(event.endsAt)}.
           </p>
           {error ? <p className="error">{error}</p> : null}
           <div className="button-row">
