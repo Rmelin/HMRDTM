@@ -7,7 +7,7 @@ import { GuestChatPanel } from "@/components/guest-chat-panel";
 import { GuestMealsPanel } from "@/components/guest-meals-panel";
 import { GuestProfilePanel } from "@/components/guest-profile-panel";
 import { db } from "@/lib/db";
-import { formatDateTime } from "@/lib/datetime";
+import { formatDateTime, formatTime } from "@/lib/datetime";
 import { getGuestContext } from "@/lib/guest";
 import {
   chatMessages,
@@ -57,6 +57,22 @@ export default async function GuestPage({ params }: { params: { token: string } 
     ? await db.select().from(guestResponses).where(inArray(guestResponses.personId, personIds))
     : [];
   const visibleProgram = programList.filter((item) => item.isVisible);
+  const scheduleItems = [
+    ...mealsList.map((meal) => ({
+      id: meal.id,
+      type: "meal" as const,
+      name: meal.name,
+      startsAt: meal.startsAt,
+      endsAt: meal.endsAt
+    })),
+    ...visibleProgram.map((item) => ({
+      id: item.id,
+      type: "program" as const,
+      name: item.name,
+      startsAt: item.startsAt,
+      endsAt: item.endsAt
+    }))
+  ];
   const otherGuests = guestList.filter((group) => group.id !== context.group.id);
   const guestStatus: Record<string, string> = {
     yes: "Deltager",
@@ -135,6 +151,7 @@ export default async function GuestPage({ params }: { params: { token: string } 
           availability={availability}
           eventStartsAt={context.event.startsAt}
           eventEndsAt={context.event.endsAt}
+          scheduleItems={scheduleItems}
         />
       </CollapsibleSection>
 
@@ -147,7 +164,7 @@ export default async function GuestPage({ params }: { params: { token: string } 
           <div className="list">
             {visibleProgram.map((item) => (
               <article className="list-item" key={item.id}>
-                <div className="item-heading"><strong>{item.name}</strong><span className="badge">{new Date(item.startsAt).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}</span></div>
+                <div className="item-heading"><strong>{item.name}</strong><span className="badge">{formatTime(item.startsAt)}</span></div>
                 {item.description ? <p>{item.description}</p> : null}
               </article>
             ))}

@@ -1,44 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { formatTime, toLocalDateTimeInput } from "@/lib/datetime";
+import { ScheduleCalendarGrid } from "@/components/schedule-calendar-grid";
+import {
+  parseDateTimeInput,
+  toLocalDateTimeInput
+} from "@/lib/datetime";
+import { ScheduleItem } from "@/lib/schedule";
 
 type Availability = { comesAt: number | null; leavesAt: number | null };
 type DraftWindow = { comesAt: string; leavesAt: string };
-
-const PIXELS_PER_MINUTE = 0.5;
-const DAY_MINUTES = 24 * 60;
-
-function localDayStart(value: number) {
-  const date = new Date(value);
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-}
-
-function addLocalDays(value: number, days: number) {
-  const date = new Date(value);
-  date.setDate(date.getDate() + days);
-  return date.getTime();
-}
-
-function minutesAfterDayStart(value: number, dayStart: number) {
-  return Math.round((value - dayStart) / 60_000);
-}
 
 export function AvailabilityWindowsEditor({
   saveUrl,
   availability,
   eventStartsAt,
-  eventEndsAt
+  eventEndsAt,
+  scheduleItems = []
 }: {
   saveUrl: string;
   availability: Availability[];
   eventStartsAt: number;
   eventEndsAt: number;
+  scheduleItems?: ScheduleItem[];
 }) {
   const router = useRouter();
-  const calendarScrollRef = useRef<HTMLDivElement>(null);
   const min = toLocalDateTimeInput(eventStartsAt);
   const max = toLocalDateTimeInput(eventEndsAt);
   const [windows, setWindows] = useState<DraftWindow[]>(
@@ -52,35 +40,16 @@ export function AvailabilityWindowsEditor({
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const firstDay = localDayStart(eventStartsAt);
-    const startMinute = minutesAfterDayStart(eventStartsAt, firstDay);
-    if (calendarScrollRef.current) {
-      calendarScrollRef.current.scrollTop = Math.max(0, startMinute * PIXELS_PER_MINUTE - 90);
-    }
-  }, [eventStartsAt]);
-
-  const days: number[] = [];
-  for (
-    let day = localDayStart(eventStartsAt);
-    day <= localDayStart(eventEndsAt);
-    day = addLocalDays(day, 1)
-  ) {
-    days.push(day);
-  }
-
-  const calendarWindows = windows.flatMap((window, index) => {
-    const startsAt = new Date(window.comesAt).getTime();
-    const endsAt = new Date(window.leavesAt).getTime();
+  const attendanceWindows = windows.flatMap((window, index) => {
+    const startsAt = parseDateTimeInput(window.comesAt);
+    const endsAt = parseDateTimeInput(window.leavesAt);
     if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || endsAt <= startsAt) return [];
-    return days.flatMap((dayStart) => {
-      const dayEnd = addLocalDays(dayStart, 1);
-      const segmentStart = Math.max(startsAt, dayStart);
-      const segmentEnd = Math.min(endsAt, dayEnd);
-      return segmentEnd > segmentStart
-        ? [{ index, dayStart, segmentStart, segmentEnd, startsAt, endsAt }]
-        : [];
-    });
+    return [{
+      id: `attendance-${index}`,
+      name: `Tidsrum ${index + 1}`,
+      startsAt,
+      endsAt
+    }];
   });
 
   function updateWindow(index: number, update: Partial<DraftWindow>) {
@@ -128,48 +97,20 @@ export function AvailabilityWindowsEditor({
       <p className="helper-text"><strong>Som standard deltager du i hele eventet.</strong> Kan du ikke være med hele tiden, kan du rette tiderne eller tilføje flere tidsrum her. Tiderne bruges til at beregne, hvilke måltider du forventes til.</p>
       <div className="meal-calendar-shell">
         <div className="item-heading">
-          <div><h3>Dine tider i kalenderen</h3><p className="helper-text">De markerede blokke viser, hvornår du deltager.</p></div>
-          <span className="badge accent">Visuelt overblik</span>
+          <div><h3>Din samlede kalender</h3><p className="helper-text">Se dine deltagelsestider sammen med måltider og program.</p></div>
+          <span className="badge accent">Samlet overblik</span>
         </div>
-        <div className="meal-calendar-scroll attendance-calendar-scroll" ref={calendarScrollRef}>
-          <div className="meal-calendar" style={{ gridTemplateColumns: `54px repeat(${days.length}, minmax(150px, 1fr))` }}>
-            <div className="calendar-corner" />
-            {days.map((dayStart) => (
-              <div className="calendar-day-title" key={`title-${dayStart}`}>
-                <strong>{new Date(dayStart).toLocaleDateString("da-DK", { weekday: "short" })}</strong>
-                <span>{new Date(dayStart).toLocaleDateString("da-DK", { day: "numeric", month: "short" })}</span>
-              </div>
-            ))}
-            <div className="calendar-times" aria-hidden="true">
-              {Array.from({ length: 24 }, (_, hour) => (
-                <span key={hour} style={{ top: hour * 60 * PIXELS_PER_MINUTE }}>{String(hour).padStart(2, "0")}:00</span>
-              ))}
-            </div>
-            {days.map((dayStart) => {
-              const validStart = Math.max(0, minutesAfterDayStart(eventStartsAt, dayStart));
-              const validEnd = Math.min(DAY_MINUTES, minutesAfterDayStart(eventEndsAt, dayStart));
-              return (
-                <div className="calendar-day-column attendance-calendar-day" key={dayStart}>
-                  {validStart > 0 ? <div className="calendar-locked" style={{ top: 0, height: validStart * PIXELS_PER_MINUTE }} /> : null}
-                  {validEnd < DAY_MINUTES ? <div className="calendar-locked" style={{ top: validEnd * PIXELS_PER_MINUTE, bottom: 0 }} /> : null}
-                  {calendarWindows.filter((window) => window.dayStart === dayStart).map((window) => (
-                    <div
-                      className="calendar-meal attendance-calendar-window"
-                      key={`${window.index}-${dayStart}`}
-                      style={{
-                        top: minutesAfterDayStart(window.segmentStart, dayStart) * PIXELS_PER_MINUTE,
-                        height: Math.max(28, minutesAfterDayStart(window.segmentEnd, window.segmentStart) * PIXELS_PER_MINUTE)
-                      }}
-                    >
-                      <strong>Tidsrum {window.index + 1}</strong>
-                      <span>{formatTime(window.segmentStart)}–{formatTime(window.segmentEnd)}</span>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
+        <div className="calendar-legend" aria-label="Kalenderforklaring">
+          <span><i className="legend-swatch attendance" /> Din deltagelse</span>
+          <span><i className="legend-swatch meal" /> Måltid</span>
+          <span><i className="legend-swatch program" /> Program</span>
         </div>
+        <ScheduleCalendarGrid
+          eventStartsAt={eventStartsAt}
+          eventEndsAt={eventEndsAt}
+          items={scheduleItems}
+          attendance={attendanceWindows}
+        />
       </div>
       <div className="button-row" style={{ marginTop: 0 }}>
         <button

@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { getCurrentUser, getEventForUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { formatDateTime, formatTime } from "@/lib/datetime";
 import { calculateMealStats } from "@/lib/meal-stats";
 import {
   changeLog,
@@ -32,8 +33,8 @@ function summarizeChange(type: string, value: string) {
     if (type === "attendance_window") {
       const windows = Array.isArray(parsed) ? parsed : [parsed];
       return windows.map((window) => {
-        const comes = window?.comesAt ? new Date(window.comesAt).toLocaleString("da-DK") : "Ikke angivet";
-        const leaves = window?.leavesAt ? new Date(window.leavesAt).toLocaleString("da-DK") : "Ikke angivet";
+        const comes = window?.comesAt ? formatDateTime(window.comesAt) : "Ikke angivet";
+        const leaves = window?.leavesAt ? formatDateTime(window.leavesAt) : "Ikke angivet";
         return `${comes} → ${leaves}`;
       }).join(" · ") || "Ingen tidsrum";
     }
@@ -69,7 +70,7 @@ export default async function MealDetailPage({ params }: { params: { id: string;
       </div>
       <section className="event-hero">
         <div><span className="eyebrow">Måltidsdetalje</span><h1>{meal.name}</h1><p>{meal.description || "Se forventet antal, gæstesvar og kosthensyn."}</p></div>
-        <div className="event-meta"><span>🗓 {new Date(meal.startsAt).toLocaleString("da-DK")} – {new Date(meal.endsAt).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}</span><span>⏱ Svar senest {new Date(meal.cutoffAt).toLocaleString("da-DK")}</span></div>
+        <div className="event-meta"><span>🗓 {formatDateTime(meal.startsAt)} – {formatTime(meal.endsAt)}</span><span>⏱ Svar senest {formatDateTime(meal.cutoffAt)}</span></div>
       </section>
 
       {logs.length > 0 ? <div className="alert" style={{ marginTop: 14 }}><strong>⚠ {logs.length} ændring(er) efter Svar senest</strong><span className="badge warning">Se log nedenfor</span></div> : null}
@@ -96,7 +97,7 @@ export default async function MealDetailPage({ params }: { params: { id: string;
       <section className="card" style={{ marginTop: 16 }}>
         <span className="eyebrow">Svarfrist-log</span><h2>Ændringer efter Svar senest</h2>
         {logs.length === 0 ? <div className="empty-state">Ingen ændringer efter Svar senest.</div> : <div className="list">{logs.map((entry) => (
-          <article className="list-item" key={entry.id}><div className="item-heading"><strong>{entry.entityType === "meal_response" ? "Måltidssvar" : entry.entityType === "attendance_window" ? "Kommer/går" : "Eventstatus"}</strong><span className="badge warning">{new Date(entry.changedAt).toLocaleString("da-DK")}</span></div><div className="muted">{entry.guestGroupId ? groupName.get(entry.guestGroupId) ?? "Gæst" : entry.changedBy}</div><p><strong>Før:</strong> {summarizeChange(entry.entityType, entry.before)}<br /><strong>Efter:</strong> {summarizeChange(entry.entityType, entry.after)}</p></article>
+          <article className="list-item" key={entry.id}><div className="item-heading"><strong>{entry.entityType === "meal_response" ? "Måltidssvar" : entry.entityType === "attendance_window" ? "Kommer/går" : "Eventstatus"}</strong><span className="badge warning">{formatDateTime(entry.changedAt)}</span></div><div className="muted">{entry.guestGroupId ? groupName.get(entry.guestGroupId) ?? "Gæst" : entry.changedBy}</div><p><strong>Før:</strong> {summarizeChange(entry.entityType, entry.before)}<br /><strong>Efter:</strong> {summarizeChange(entry.entityType, entry.after)}</p></article>
         ))}</div>}
       </section>
     </div>

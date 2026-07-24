@@ -6,6 +6,10 @@ import { db } from "@/lib/db";
 import { events, meals } from "@/lib/schema";
 import { getCurrentUser, getEventForUser } from "@/lib/auth";
 import { defaultMealEnd } from "@/lib/defaults";
+import {
+  formatLocalDate,
+  parseDateTimeInput
+} from "@/lib/datetime";
 import { validateMealWindow } from "@/lib/meal-window";
 
 const schema = z.object({
@@ -16,13 +20,6 @@ const schema = z.object({
   cutoffAt: z.string().optional(),
   description: z.string().optional()
 });
-
-function formatDate(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 export async function POST(
   request: Request,
@@ -44,17 +41,24 @@ export async function POST(
     return NextResponse.json({ error: "Ugyldig input" }, { status: 400 });
   }
 
-  const startsAt = new Date(payload.data.startsAt);
+  const startsAt = parseDateTimeInput(payload.data.startsAt);
   const endsAt = payload.data.endsAt
-    ? new Date(payload.data.endsAt)
+    ? parseDateTimeInput(payload.data.endsAt)
     : defaultMealEnd(startsAt);
   const cutoffAt = payload.data.cutoffAt
-    ? new Date(payload.data.cutoffAt)
-    : new Date(event.signupDeadlineAt);
-  const date = formatDate(startsAt);
+    ? parseDateTimeInput(payload.data.cutoffAt)
+    : event.signupDeadlineAt;
+  if (
+    !Number.isFinite(startsAt) ||
+    !Number.isFinite(endsAt) ||
+    !Number.isFinite(cutoffAt)
+  ) {
+    return NextResponse.json({ error: "Ugyldigt tidspunkt" }, { status: 400 });
+  }
+  const date = formatLocalDate(startsAt);
 
   const windowError = validateMealWindow(
-    { startsAt: startsAt.getTime(), endsAt: endsAt.getTime() },
+    { startsAt, endsAt },
     event
   );
   if (windowError) return NextResponse.json({ error: windowError }, { status: 400 });
@@ -65,9 +69,9 @@ export async function POST(
     eventId: params.id,
     name: payload.data.name,
     date,
-    startsAt: startsAt.getTime(),
-    endsAt: endsAt.getTime(),
-    cutoffAt: cutoffAt.getTime(),
+    startsAt,
+    endsAt,
+    cutoffAt,
     description: payload.data.description ?? null
   });
 

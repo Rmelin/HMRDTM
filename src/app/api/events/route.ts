@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { eventOwners, events } from "@/lib/schema";
 import { getCurrentUser, isSystemAdmin } from "@/lib/auth";
 import { defaultEventEnd, defaultSignupDeadline } from "@/lib/defaults";
+import { parseDateTimeInput } from "@/lib/datetime";
 
 const schema = z.object({
   title: z.string().min(1),
@@ -43,14 +44,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Ugyldig input" }, { status: 400 });
   }
 
-  const startsAt = new Date(payload.data.startsAt);
+  const startsAt = parseDateTimeInput(payload.data.startsAt);
+  if (!Number.isFinite(startsAt)) {
+    return NextResponse.json(
+      { error: "Ugyldigt starttidspunkt" },
+      { status: 400 }
+    );
+  }
   const endsAt = payload.data.endsAt
-    ? new Date(payload.data.endsAt)
+    ? parseDateTimeInput(payload.data.endsAt)
     : defaultEventEnd(startsAt);
   const signupDeadlineAt = payload.data.signupDeadlineAt
-    ? new Date(payload.data.signupDeadlineAt)
+    ? parseDateTimeInput(payload.data.signupDeadlineAt)
     : defaultSignupDeadline(startsAt);
 
+  if (
+    !Number.isFinite(endsAt) ||
+    !Number.isFinite(signupDeadlineAt)
+  ) {
+    return NextResponse.json(
+      { error: "Ugyldigt tidspunkt" },
+      { status: 400 }
+    );
+  }
   if (endsAt <= startsAt) {
     return NextResponse.json(
       { error: "Slut skal være efter start" },
@@ -65,10 +81,10 @@ export async function POST(request: Request) {
       id,
       title: payload.data.title,
       location: payload.data.location ?? null,
-      startsAt: startsAt.getTime(),
-      endsAt: endsAt.getTime(),
+      startsAt,
+      endsAt,
       description: payload.data.description ?? null,
-      signupDeadlineAt: signupDeadlineAt.getTime(),
+      signupDeadlineAt,
       allowPartner: payload.data.allowPartner,
       allowChildren: payload.data.allowChildren,
       allowGuestList: payload.data.allowGuestList,

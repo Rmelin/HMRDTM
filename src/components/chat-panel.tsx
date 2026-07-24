@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { formatDateTime } from "@/lib/datetime";
+
 type ChatMessage = {
   id: string;
   message: string;
@@ -64,7 +66,7 @@ export function ChatPanel({
         ) : (
           messages.map((msg) => (
             <div key={msg.id} className="chat-message">
-              <div className="item-heading"><strong>{msg.authorName ?? "Admin"}</strong><time>{new Date(msg.createdAt).toLocaleString("da-DK")}</time></div>
+              <div className="item-heading"><strong>{msg.authorName ?? "Admin"}</strong><time>{formatDateTime(msg.createdAt)}</time></div>
               <div>{msg.message}</div>
             </div>
           ))

@@ -4,6 +4,10 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { events, meals } from "@/lib/schema";
 import { canAccessEvent, getCurrentUser } from "@/lib/auth";
+import {
+  formatLocalDate,
+  parseDateTimeInput
+} from "@/lib/datetime";
 import { validateMealWindow } from "@/lib/meal-window";
 
 const schema = z.object({
@@ -14,14 +18,6 @@ const schema = z.object({
   cutoffAt: z.string().optional(),
   description: z.string().nullable().optional()
 });
-
-function formatDate(value: number) {
-  const date = new Date(value);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 export async function PUT(
   request: Request,
@@ -61,20 +57,29 @@ export async function PUT(
   if (payload.data.description !== undefined)
     update.description = payload.data.description;
   if (payload.data.startsAt)
-    update.startsAt = new Date(payload.data.startsAt).getTime();
+    update.startsAt = parseDateTimeInput(payload.data.startsAt);
   if (payload.data.endsAt)
-    update.endsAt = new Date(payload.data.endsAt).getTime();
+    update.endsAt = parseDateTimeInput(payload.data.endsAt);
   if (payload.data.cutoffAt)
-    update.cutoffAt = new Date(payload.data.cutoffAt).getTime();
+    update.cutoffAt = parseDateTimeInput(payload.data.cutoffAt);
 
   const nextStartsAt = (update.startsAt as number | undefined) ?? meal.startsAt;
   const nextEndsAt = (update.endsAt as number | undefined) ?? meal.endsAt;
+  const nextCutoffAt =
+    (update.cutoffAt as number | undefined) ?? meal.cutoffAt;
+  if (
+    !Number.isFinite(nextStartsAt) ||
+    !Number.isFinite(nextEndsAt) ||
+    !Number.isFinite(nextCutoffAt)
+  ) {
+    return NextResponse.json({ error: "Ugyldigt tidspunkt" }, { status: 400 });
+  }
   const windowError = validateMealWindow(
     { startsAt: nextStartsAt, endsAt: nextEndsAt },
     event
   );
   if (windowError) return NextResponse.json({ error: windowError }, { status: 400 });
-  update.date = formatDate(nextStartsAt);
+  update.date = formatLocalDate(nextStartsAt);
 
   await db.update(meals).set(update).where(eq(meals.id, meal.id));
   return NextResponse.json({ ok: true });
