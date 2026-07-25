@@ -106,7 +106,8 @@ Den offentlige forside forklarer, at HMRDTM er skabt af Rasmus Melin Graasbøll 
 - favicon skal lige en begivenheder i røde farver
 - icon.svg er logo og ligger i /
 - accentfarve rød lig Favicon 
-- Teksten i tab i browser skal være "HMRDTM"
+- Teksten i browserfanen skal være "HMRDTM" på offentlige sider og adminsider
+- Teksten i browserfanen skal være "Invitation" på personlige gæstelinks
 - Det skal være Mobile first
 
 
