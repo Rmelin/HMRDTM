@@ -117,6 +117,11 @@ code { padding: .15rem .4rem; border-radius: 6px; background: var(--surface-3); 
 .home-privacy-icon { display: grid; width: 58px; height: 58px; place-items: center; border-radius: 18px; background: var(--surface-2); font-size: 1.65rem; }
 .home-privacy h2 { margin-bottom: .35rem; }
 .home-privacy p { max-width: 850px; margin-bottom: 0; }
+.home-github { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 18px; border-style: dashed; box-shadow: none; }
+.home-github-icon { display: grid; width: 58px; height: 58px; place-items: center; border-radius: 18px; color: var(--accent); background: var(--accent-soft); font-size: 1.8rem; font-weight: 900; }
+.home-github h2 { margin-bottom: .35rem; }
+.home-github p { max-width: 800px; margin-bottom: 0; }
+.home-github .button-row { margin-top: 14px; }
 
 .section { margin-top: 16px; box-shadow: none; overflow: clip; }
 .section-title { display: flex; min-height: 58px; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; list-style: none; font-size: 1.05rem; font-weight: 800; }
@@ -264,7 +269,7 @@ input[type="checkbox"] { width: 24px; min-height: 24px; accent-color: var(--acce
   .meal-response-segmented { grid-template-columns: repeat(2, 1fr); }
   .home-story, .home-feature-grid { grid-template-columns: 1fr; }
   .home-story blockquote { padding-left: 16px; }
-  .home-privacy { grid-template-columns: 1fr; }
+  .home-privacy, .home-github { grid-template-columns: 1fr; }
   .form-grid label:has(textarea), .form-grid label:has(input[type="checkbox"]) { grid-column: auto; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .progress-card, .admin-toolbar { align-items: flex-start; flex-direction: column; }

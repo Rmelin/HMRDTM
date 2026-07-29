@@ -45,6 +45,18 @@ export default function HomePage() {
         <span aria-hidden="true" className="home-privacy-icon">🔐</span>
         <div><span className="eyebrow">Privat som udgangspunkt</span><h2>Invitationen hører til hos arrangøren og gæsterne</h2><p>Gæsterne behøver ikke en profil på et socialt medie. Deres personlige invitationslink giver kun adgang til den invitation, de har modtaget, og oplysningerne samles i arrangørens egen HMRDTM-installation.</p></div>
       </section>
+
+      <section className="card home-github">
+        <span aria-hidden="true" className="home-github-icon">⌘</span>
+        <div>
+          <span className="eyebrow">Byg videre sammen</span>
+          <h2>Har du en idé eller fundet en fejl?</h2>
+          <p>Du er meget velkommen til at hente HMRDTM, bruge det selv og bygge videre på det. Del gerne idéer, forbedringer og fejl som et issue på GitHub.</p>
+          <div className="button-row">
+            <a className="button ghost" href="https://github.com/Rmelin/HMRDTM/issues" target="_blank" rel="noreferrer">Opret eller se issues på GitHub ↗</a>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
