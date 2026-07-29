@@ -45,7 +45,18 @@ export default async function AdminEventPage({ params }: { params: { id: string 
       .where(eq(chatMessages.eventId, event.id))
       .orderBy(asc(chatMessages.createdAt)),
     db.select().from(changeLog).where(and(eq(changeLog.eventId, event.id), eq(changeLog.isAfterCutoff, true))).orderBy(desc(changeLog.changedAt)),
-    db.select({ id: admins.id, name: admins.name, email: admins.email }).from(eventOwners).innerJoin(admins, eq(eventOwners.userId, admins.id)).where(eq(eventOwners.eventId, event.id)),
+    db
+      .select({
+        id: admins.id,
+        name: admins.name,
+        email: admins.email,
+        contactPhone: eventOwners.contactPhone,
+        shareEmail: eventOwners.shareEmail,
+        sharePhone: eventOwners.sharePhone
+      })
+      .from(eventOwners)
+      .innerJoin(admins, eq(eventOwners.userId, admins.id))
+      .where(eq(eventOwners.eventId, event.id)),
     db.select({ id: admins.id, name: admins.name, email: admins.email }).from(admins)
   ]);
   const ownerIds = new Set(ownerRows.map((owner) => owner.id));
@@ -189,7 +200,12 @@ export default async function AdminEventPage({ params }: { params: { id: string 
       </CollapsibleSection>
 
       <CollapsibleSection title={`Eventejere (${ownerRows.length})`}>
-        <EventOwnersForm eventId={event.id} owners={ownerRows} availableUsers={availableOwners} />
+        <EventOwnersForm
+          eventId={event.id}
+          owners={ownerRows}
+          availableUsers={availableOwners}
+          currentUserId={user.id}
+        />
       </CollapsibleSection>
     </div>
   );
