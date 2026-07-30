@@ -6,8 +6,11 @@ import { getCurrentUser, getEventForUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDateTime, formatTime } from "@/lib/datetime";
 import { calculateMealStats } from "@/lib/meal-stats";
+import { buildOwnerGuestData } from "@/lib/owner-guests";
 import {
+  admins,
   changeLog,
+  eventOwners,
   events,
   guestAvailability,
   guestGroups,
@@ -59,8 +62,28 @@ export default async function MealDetailPage({ params }: { params: { id: string;
   const personIds = peopleList.map((person) => person.id);
   const responses = personIds.length ? await db.select().from(guestResponses).where(and(eq(guestResponses.mealId, meal.id), inArray(guestResponses.personId, personIds))) : [];
   const logs = await db.select().from(changeLog).where(and(eq(changeLog.mealId, meal.id), eq(changeLog.isAfterCutoff, true))).orderBy(desc(changeLog.changedAt));
-  const stats = calculateMealStats(meal, groups, peopleList, availability, responses);
-  const groupName = new Map(groups.map((group) => [group.id, group.displayName]));
+  const ownerRows = await db
+    .select({
+      id: admins.id,
+      name: admins.name,
+      email: admins.email,
+      countsAsGuest: eventOwners.countsAsGuest
+    })
+    .from(eventOwners)
+    .innerJoin(admins, eq(eventOwners.userId, admins.id))
+    .where(eq(eventOwners.eventId, event.id));
+  const ownerGuests = buildOwnerGuestData(event, ownerRows);
+  const participantGroups = [...groups, ...ownerGuests.groups];
+  const stats = calculateMealStats(
+    meal,
+    participantGroups,
+    [...peopleList, ...ownerGuests.people],
+    [...availability, ...ownerGuests.availability],
+    responses
+  );
+  const groupName = new Map(
+    participantGroups.map((group) => [group.id, group.displayName])
+  );
 
   return (
     <div className="app-view">

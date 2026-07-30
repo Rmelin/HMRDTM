@@ -17,7 +17,13 @@ Den offentlige forside forklarer, at HMRDTM er skabt af Rasmus Melin Graasbøll 
 - Admin og gæst har separate views og flows
 
 ## Event (Admin)
-- Opret/ret/slet event med titel, sted, start/slut og beskrivelse
+- Opret/ret/arkivér event med titel, sted, start/slut og beskrivelse
+- Arkivering skjuler eventet fra hoveddashboardet uden at slette gæster, svar,
+  måltider eller øvrige data; eventet kan åbnes og gendannes fra arkivet
+- Hver eventejer kan under Eventindstillinger vælges som deltager; en valgt ejer
+  tælles som voksen under hele eventet og ved alle overlappende måltider
+- En eventejer med særlige komme/gå-tider vælges ikke som automatisk deltager,
+  men oprettes i stedet som almindelig gæst med invitationslink
 - Start/slut vises som dato + tid felter
 - Standard længe af event er 3 timer, hvis ikke udfyldt
 - Standard "Deadline for tilmelding" auto-sættes til 5 dage før kl. 16:00, hvis ikke udfyldt
@@ -109,6 +115,8 @@ Den offentlige forside forklarer, at HMRDTM er skabt af Rasmus Melin Graasbøll 
 - Standard darkmode med mulighed for light
 - favicon skal lige en begivenheder i røde farver
 - icon.svg er logo og ligger i /
+- Webapp-manifestet skal angive PNG-ikoner i 192 × 192 og 512 × 512 samt et
+  maskable ikon; iOS skal have et separat Apple touch-icon i 180 × 180
 - accentfarve rød lig Favicon 
 - Teksten i browserfanen skal være "HMRDTM" på offentlige sider og adminsider
 - Teksten i browserfanen skal være "Invitation" på personlige gæstelinks

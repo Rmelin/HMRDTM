@@ -34,6 +34,7 @@ export const events = sqliteTable("events", {
   allowPartner: integer("allow_partner", { mode: "boolean" }).notNull().default(false),
   allowChildren: integer("allow_children", { mode: "boolean" }).notNull().default(false),
   allowGuestList: integer("allow_guest_list", { mode: "boolean" }).notNull().default(true),
+  archivedAt: integer("archived_at", { mode: "number" }),
   createdAt: integer("created_at", { mode: "number" }).notNull()
 });
 
@@ -49,6 +50,7 @@ export const eventOwners = sqliteTable(
     contactPhone: text("contact_phone"),
     shareEmail: integer("share_email", { mode: "boolean" }).notNull().default(false),
     sharePhone: integer("share_phone", { mode: "boolean" }).notNull().default(false),
+    countsAsGuest: integer("counts_as_guest", { mode: "boolean" }).notNull().default(false),
     createdAt: integer("created_at", { mode: "number" }).notNull()
   },
   (table) => ({
