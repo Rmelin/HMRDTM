@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { AdminScheduleCalendar } from "@/components/admin-schedule-calendar";
 import { ChatPanel } from "@/components/chat-panel";
 import { CollapsibleSection } from "@/components/collapsible-section";
+import { EventArchiveButton } from "@/components/event-archive-button";
 import { EventEditForm } from "@/components/event-edit-form";
 import { EventOwnersForm } from "@/components/event-owners-form";
 import { GuestGroupForm } from "@/components/guest-group-form";
@@ -13,6 +14,7 @@ import { getCurrentUser, getEventForUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDateTime } from "@/lib/datetime";
 import { calculateMealStats } from "@/lib/meal-stats";
+import { buildOwnerGuestData } from "@/lib/owner-guests";
 import {
   changeLog,
   chatMessages,
@@ -52,7 +54,8 @@ export default async function AdminEventPage({ params }: { params: { id: string 
         email: admins.email,
         contactPhone: eventOwners.contactPhone,
         shareEmail: eventOwners.shareEmail,
-        sharePhone: eventOwners.sharePhone
+        sharePhone: eventOwners.sharePhone,
+        countsAsGuest: eventOwners.countsAsGuest
       })
       .from(eventOwners)
       .innerJoin(admins, eq(eventOwners.userId, admins.id))
@@ -61,12 +64,19 @@ export default async function AdminEventPage({ params }: { params: { id: string 
   ]);
   const ownerIds = new Set(ownerRows.map((owner) => owner.id));
   const availableOwners = allUsers.filter((candidate) => !ownerIds.has(candidate.id));
+  const ownerGuests = buildOwnerGuestData(event, ownerRows);
 
   const groupIds = groups.map((group) => group.id);
   const allPeople = groupIds.length ? await db.select().from(people).where(inArray(people.groupId, groupIds)) : [];
   const availabilityList = groupIds.length ? await db.select().from(guestAvailability).where(inArray(guestAvailability.groupId, groupIds)) : [];
   const personIds = allPeople.map((person) => person.id);
   const responses = personIds.length ? await db.select().from(guestResponses).where(inArray(guestResponses.personId, personIds)) : [];
+  const participantGroups = [...groups, ...ownerGuests.groups];
+  const participantPeople = [...allPeople, ...ownerGuests.people];
+  const participantAvailability = [
+    ...availabilityList,
+    ...ownerGuests.availability
+  ];
 
   const peopleByGroup = new Map<string, typeof allPeople>();
   for (const person of allPeople) peopleByGroup.set(person.groupId, [...(peopleByGroup.get(person.groupId) ?? []), person]);
@@ -83,7 +93,16 @@ export default async function AdminEventPage({ params }: { params: { id: string 
   }
 
   const mealStats = new Map(
-    mealsList.map((meal) => [meal.id, calculateMealStats(meal, groups, allPeople, availabilityList, responses)])
+    mealsList.map((meal) => [
+      meal.id,
+      calculateMealStats(
+        meal,
+        participantGroups,
+        participantPeople,
+        participantAvailability,
+        responses
+      )
+    ])
   );
   const diets = allPeople.filter((person) => person.dietType && person.dietType !== "none");
   const notes = allPeople.filter((person) => person.dietNotes);
@@ -111,6 +130,20 @@ export default async function AdminEventPage({ params }: { params: { id: string 
         </div>
       </section>
 
+      {event.archivedAt !== null ? (
+        <div className="alert" style={{ marginTop: 14 }}>
+          <div>
+            <strong>Dette event er arkiveret</strong>
+            <div className="muted">Det vises ikke på det almindelige dashboard.</div>
+          </div>
+          <EventArchiveButton
+            archived
+            eventId={event.id}
+            eventTitle={event.title}
+          />
+        </div>
+      ) : null}
+
       {cutoffChanges.length > 0 ? (
         <div className="alert" style={{ marginTop: 14 }}>
           <div><strong>⚠ {cutoffChanges.length} ændring(er) efter Svar senest</strong><div className="muted">Åbn et måltid for at se før/efter.</div></div>
@@ -121,7 +154,7 @@ export default async function AdminEventPage({ params }: { params: { id: string 
       <div className="dashboard-top-grid">
         <div className="dashboard-overview">
           <div className="stats-grid">
-            <article className="stat-card"><span>Gæster</span><strong>{allPeople.length}</strong><small className="muted">{groups.length} invitationer</small></article>
+            <article className="stat-card"><span>Gæster</span><strong>{participantPeople.length}</strong><small className="muted">{groups.length} invitationer{ownerGuests.people.length > 0 ? ` · ${ownerGuests.people.length} ${ownerGuests.people.length === 1 ? "eventejer" : "eventejere"}` : ""}</small></article>
             <article className="stat-card"><span>Invitationssvar</span><strong>{answeredInvitations}</strong><small className="muted">har gemt deres deltagelse</small></article>
             <article className="stat-card"><span>Måltidsafvigelser</span><strong>{responses.length}</strong><small className="muted">ellers følges eventstatus</small></article>
             <article className="stat-card"><span>Kosthensyn</span><strong>{diets.length}</strong><small className="muted">{notes.length} noter</small></article>
@@ -196,7 +229,17 @@ export default async function AdminEventPage({ params }: { params: { id: string 
       </CollapsibleSection>
 
       <CollapsibleSection title="Eventindstillinger">
-        <EventEditForm event={event} />
+        <EventEditForm event={event} owners={ownerRows} />
+        {event.archivedAt === null ? (
+          <div style={{ marginTop: 24 }}>
+            <span className="eyebrow">Arkiv</span>
+            <p className="helper-text">
+              Eventet fjernes fra dashboardet, men alle gæster, svar og måltider
+              bevares og kan gendannes.
+            </p>
+            <EventArchiveButton eventId={event.id} eventTitle={event.title} />
+          </div>
+        ) : null}
       </CollapsibleSection>
 
       <CollapsibleSection title={`Eventejere (${ownerRows.length})`}>

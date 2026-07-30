@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+  admins,
+  eventOwners,
   events,
   guestAvailability,
   guestGroups,
@@ -11,6 +13,7 @@ import {
 } from "@/lib/schema";
 import { getCurrentUser, getEventForUser } from "@/lib/auth";
 import { calculateMealStats } from "@/lib/meal-stats";
+import { buildOwnerGuestData } from "@/lib/owner-guests";
 import { hasOverlap } from "@/lib/overlap";
 
 function csvEscape(value: string) {
@@ -80,6 +83,17 @@ export async function GET(
     .select()
     .from(guestGroups)
     .where(eq(guestGroups.eventId, event.id));
+  const ownerRows = await db
+    .select({
+      id: admins.id,
+      name: admins.name,
+      email: admins.email,
+      countsAsGuest: eventOwners.countsAsGuest
+    })
+    .from(eventOwners)
+    .innerJoin(admins, eq(eventOwners.userId, admins.id))
+    .where(eq(eventOwners.eventId, event.id));
+  const ownerGuests = buildOwnerGuestData(event, ownerRows);
 
   const groupIds = groupList.map((group) => group.id);
   const peopleList = groupIds.length
@@ -99,21 +113,30 @@ export async function GET(
         .from(guestResponses)
         .where(inArray(guestResponses.personId, personIds))
     : [];
+  const participantGroups = [...groupList, ...ownerGuests.groups];
+  const participantPeople = [...peopleList, ...ownerGuests.people];
+  const participantAvailability = [
+    ...availabilityList,
+    ...ownerGuests.availability
+  ];
 
   const responseMap = new Map(
     responses.map((item) => [`${item.personId}:${item.mealId}`, item])
   );
 
-  const availabilityByGroup = new Map<string, typeof availabilityList>();
-  for (const item of availabilityList) {
+  const availabilityByGroup = new Map<
+    string,
+    typeof participantAvailability
+  >();
+  for (const item of participantAvailability) {
     availabilityByGroup.set(item.groupId, [
       ...(availabilityByGroup.get(item.groupId) ?? []),
       item
     ]);
   }
 
-  const peopleByGroup = new Map<string, typeof peopleList>();
-  for (const person of peopleList) {
+  const peopleByGroup = new Map<string, typeof participantPeople>();
+  for (const person of participantPeople) {
     const list = peopleByGroup.get(person.groupId) ?? [];
     list.push(person);
     peopleByGroup.set(person.groupId, list);
@@ -161,14 +184,14 @@ export async function GET(
     let maybeCount = 0;
     const stats = calculateMealStats(
       meal,
-      groupList,
-      peopleList,
-      availabilityList,
+      participantGroups,
+      participantPeople,
+      participantAvailability,
       responses
     );
     const guestStats = new Map(stats.guests.map((guest) => [guest.id, guest]));
 
-    for (const group of groupList) {
+    for (const group of participantGroups) {
       const availability = availabilityByGroup.get(group.id) ?? [];
       const overlaps = availability.some((window) =>
         hasOverlap(

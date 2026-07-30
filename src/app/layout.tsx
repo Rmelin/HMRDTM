@@ -6,7 +6,14 @@ export const metadata: Metadata = {
   title: "HMRDTM",
   description: "Private eventinvitationer, gæstesvar og måltidsoverblik uden gæstelogin.",
   icons: {
-    icon: "/icon.svg"
+    icon: "/icon.svg",
+    apple: [
+      {
+        url: "/apple-icon.png",
+        sizes: "180x180",
+        type: "image/png"
+      }
+    ]
   }
 };
 

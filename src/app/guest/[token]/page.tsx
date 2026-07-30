@@ -74,7 +74,8 @@ export default async function GuestPage({ params }: { params: { token: string } 
         email: admins.email,
         contactPhone: eventOwners.contactPhone,
         shareEmail: eventOwners.shareEmail,
-        sharePhone: eventOwners.sharePhone
+        sharePhone: eventOwners.sharePhone,
+        countsAsGuest: eventOwners.countsAsGuest
       })
       .from(eventOwners)
       .innerJoin(admins, eq(eventOwners.userId, admins.id))
@@ -114,7 +115,19 @@ export default async function GuestPage({ params }: { params: { token: string } 
       endsAt: item.endsAt
     }))
   ];
-  const otherGuests = guestList.filter((group) => group.id !== context.group.id);
+  const visibleGuestList = [
+    ...guestList,
+    ...ownerContacts
+      .filter((owner) => owner.countsAsGuest)
+      .map((owner) => ({
+        id: `event-owner:${owner.id}`,
+        displayName: owner.name || owner.email,
+        eventStatus: "yes"
+      }))
+  ];
+  const otherGuests = visibleGuestList.filter(
+    (group) => group.id !== context.group.id
+  );
   const guestStatus: Record<string, string> = {
     yes: "Deltager",
     maybe: "Måske",

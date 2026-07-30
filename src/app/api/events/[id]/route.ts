@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { events, guestAvailability, guestGroups } from "@/lib/schema";
+import {
+  eventOwners,
+  events,
+  guestAvailability,
+  guestGroups
+} from "@/lib/schema";
 import { getCurrentUser, getEventForUser } from "@/lib/auth";
 import { parseDateTimeInput } from "@/lib/datetime";
 
@@ -15,7 +20,9 @@ const schema = z.object({
   signupDeadlineAt: z.string().optional(),
   allowPartner: z.boolean().optional(),
   allowChildren: z.boolean().optional(),
-  allowGuestList: z.boolean().optional()
+  allowGuestList: z.boolean().optional(),
+  archived: z.boolean().optional(),
+  countedOwnerIds: z.array(z.string().uuid()).optional()
 });
 
 export async function GET(
@@ -73,8 +80,13 @@ export async function PUT(
     update.allowChildren = payload.data.allowChildren;
   if (payload.data.allowGuestList !== undefined)
     update.allowGuestList = payload.data.allowGuestList;
+  if (payload.data.archived !== undefined)
+    update.archivedAt = payload.data.archived ? Date.now() : null;
 
-  if (Object.keys(update).length === 0) {
+  if (
+    Object.keys(update).length === 0 &&
+    payload.data.countedOwnerIds === undefined
+  ) {
     return NextResponse.json({ error: "Ingen ændringer" }, { status: 400 });
   }
 
@@ -95,7 +107,24 @@ export async function PUT(
   }
 
   db.transaction((tx) => {
-    tx.update(events).set(update).where(eq(events.id, params.id)).run();
+    if (Object.keys(update).length > 0) {
+      tx.update(events).set(update).where(eq(events.id, params.id)).run();
+    }
+    if (payload.data.countedOwnerIds !== undefined) {
+      tx.update(eventOwners)
+        .set({ countsAsGuest: false })
+        .where(eq(eventOwners.eventId, params.id))
+        .run();
+      for (const userId of payload.data.countedOwnerIds) {
+        tx.update(eventOwners)
+          .set({ countsAsGuest: true })
+          .where(and(
+            eq(eventOwners.eventId, params.id),
+            eq(eventOwners.userId, userId)
+          ))
+          .run();
+      }
+    }
     if (nextStartsAt !== existingEvent.startsAt || nextEndsAt !== existingEvent.endsAt) {
       const fullEventRows = tx
         .select({ groupId: guestAvailability.groupId })
@@ -140,6 +169,10 @@ export async function DELETE(
     return NextResponse.json({ error: "Ikke fundet" }, { status: 404 });
   }
 
-  await db.delete(events).where(eq(events.id, params.id));
-  return NextResponse.json({ ok: true });
+  const archivedAt = Date.now();
+  await db
+    .update(events)
+    .set({ archivedAt })
+    .where(eq(events.id, params.id));
+  return NextResponse.json({ ok: true, archivedAt });
 }

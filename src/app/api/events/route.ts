@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { eventOwners, events } from "@/lib/schema";
 import { getCurrentUser, isSystemAdmin } from "@/lib/auth";
@@ -27,8 +27,24 @@ export async function GET() {
   }
 
   const list = isSystemAdmin(user)
-    ? await db.select().from(events).orderBy(events.startsAt)
-    : (await db.select({ event: events }).from(eventOwners).innerJoin(events, eq(eventOwners.eventId, events.id)).where(eq(eventOwners.userId, user.id)).orderBy(events.startsAt)).map((row) => row.event);
+    ? await db
+        .select()
+        .from(events)
+        .where(isNull(events.archivedAt))
+        .orderBy(events.startsAt)
+    : (
+        await db
+          .select({ event: events })
+          .from(eventOwners)
+          .innerJoin(events, eq(eventOwners.eventId, events.id))
+          .where(
+            and(
+              eq(eventOwners.userId, user.id),
+              isNull(events.archivedAt)
+            )
+          )
+          .orderBy(events.startsAt)
+      ).map((row) => row.event);
   return NextResponse.json({ events: list });
 }
 

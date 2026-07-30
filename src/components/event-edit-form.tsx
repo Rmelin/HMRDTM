@@ -17,7 +17,20 @@ type EventData = {
   allowGuestList: boolean;
 };
 
-export function EventEditForm({ event }: { event: EventData }) {
+type OwnerAttendance = {
+  id: string;
+  name: string;
+  email: string;
+  countsAsGuest: boolean;
+};
+
+export function EventEditForm({
+  event,
+  owners
+}: {
+  event: EventData;
+  owners: OwnerAttendance[];
+}) {
   const router = useRouter();
   const [title, setTitle] = useState(event.title);
   const [location, setLocation] = useState(event.location ?? "");
@@ -30,6 +43,9 @@ export function EventEditForm({ event }: { event: EventData }) {
   const [allowPartner, setAllowPartner] = useState(event.allowPartner);
   const [allowChildren, setAllowChildren] = useState(event.allowChildren);
   const [allowGuestList, setAllowGuestList] = useState(event.allowGuestList);
+  const [countedOwnerIds, setCountedOwnerIds] = useState(
+    () => new Set(owners.filter((owner) => owner.countsAsGuest).map((owner) => owner.id))
+  );
   const [error, setError] = useState<string | null>(null);
 
   const save = async () => {
@@ -46,7 +62,8 @@ export function EventEditForm({ event }: { event: EventData }) {
         signupDeadlineAt: deadline,
         allowPartner,
         allowChildren,
-        allowGuestList
+        allowGuestList,
+        countedOwnerIds: [...countedOwnerIds]
       })
     });
 
@@ -131,6 +148,40 @@ export function EventEditForm({ event }: { event: EventData }) {
           <input type="checkbox" checked={allowGuestList} onChange={(inputEvent) => setAllowGuestList(inputEvent.target.checked)} />
           <span><strong>Gæster kan se gæstelisten</strong><small>Viser kun navn og status — aldrig invitationslinks eller kostoplysninger.</small></span>
         </label>
+      </div>
+      <div className={`companion-access ${countedOwnerIds.size > 0 ? "is-enabled" : "is-disabled"}`} style={{ marginTop: 16 }}>
+        <div>
+          <span className="eyebrow">Eventejere som deltagere</span>
+          <h3>Hvilke eventejere skal tælle med?</h3>
+          <p className="helper-text">
+            Valgte ejere tælles som voksne under hele eventet og til alle
+            overlappende måltider.
+          </p>
+        </div>
+        {owners.map((owner) => (
+          <label className="checkbox-row" key={owner.id}>
+            <input
+              type="checkbox"
+              checked={countedOwnerIds.has(owner.id)}
+              onChange={(inputEvent) => {
+                setCountedOwnerIds((current) => {
+                  const next = new Set(current);
+                  if (inputEvent.target.checked) next.add(owner.id);
+                  else next.delete(owner.id);
+                  return next;
+                });
+              }}
+            />
+            <span>
+              <strong>{owner.name || owner.email}</strong>
+              <small>{owner.email}</small>
+            </span>
+          </label>
+        ))}
+        <p className="helper-text">
+          Har en ejer andre komme/gå-tider, skal ejeren ikke markeres her, men
+          i stedet oprettes som almindelig gæst med et invitationslink.
+        </p>
       </div>
       {error ? <p className="error">{error}</p> : null}
       <div className="button-row">

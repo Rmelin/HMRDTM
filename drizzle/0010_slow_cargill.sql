@@ -1,0 +1,1 @@
+ALTER TABLE `event_owners` ADD `counts_as_guest` integer DEFAULT false NOT NULL;
