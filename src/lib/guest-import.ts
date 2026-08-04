@@ -1,5 +1,6 @@
 export type ImportedGuest = {
   displayName: string;
+  contactEmail: string | null;
   contactPhone: string | null;
   children: string[];
   line: number;
@@ -11,8 +12,10 @@ export type GuestImportResult = {
 };
 
 const PHONE_PATTERN = /^[0-9+() .-]+$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const HEADER_NAMES = new Set(["navn", "name", "gæst", "gæstenavn"]);
 const HEADER_PHONES = new Set(["telefon", "phone", "telefonnummer", "mobil"]);
+const HEADER_EMAILS = new Set(["mail", "email", "e-mail", "e-post"]);
 
 function parseDelimitedLine(value: string): string[] {
   const delimiter = value.includes(";") && !value.includes(",") ? ";" : ",";
@@ -98,6 +101,7 @@ export function parseGuestImport(input: string): GuestImportResult {
   const guests: ImportedGuest[] = [];
   const errors: string[] = [];
   const lines = input.replaceAll("\r\n", "\n").replaceAll("\r", "\n").split("\n");
+  let declaredEmailColumn = false;
 
   for (let index = 0; index < lines.length; index += 1) {
     const rawLine = lines[index];
@@ -105,7 +109,10 @@ export function parseGuestImport(input: string): GuestImportResult {
     if (!rawLine.trim()) continue;
 
     const cells = parseDelimitedLine(rawLine.trim());
-    if (isHeader(cells)) continue;
+    if (isHeader(cells)) {
+      declaredEmailColumn = HEADER_EMAILS.has(normalizedHeader(cells[2] ?? ""));
+      continue;
+    }
 
     if (isChildLine(rawLine, cells)) {
       addChild(guests, errors, cells[0] || cells[1] || "", lineNumber);
@@ -123,6 +130,7 @@ export function parseGuestImport(input: string): GuestImportResult {
     }
 
     let contactPhone: string | null = null;
+    let contactEmail: string | null = null;
     const children: string[] = [];
     const secondCell = cells[1]?.trim() ?? "";
     const secondCellIsChild = /^barn\b/i.test(secondCell);
@@ -139,7 +147,23 @@ export function parseGuestImport(input: string): GuestImportResult {
       }
     }
 
-    for (const extraCell of cells.slice(2)) {
+    const thirdCell = cells[2]?.trim() ?? "";
+    if (thirdCell) {
+      if (thirdCell.length <= 254 && EMAIL_PATTERN.test(thirdCell)) {
+        contactEmail = thirdCell;
+      } else if (declaredEmailColumn) {
+        errors.push(`Linje ${lineNumber}: Mailadressen er ugyldig.`);
+      } else {
+        const name = childName(thirdCell);
+        if (name.length > 80) {
+          errors.push(`Linje ${lineNumber}: Barnets navn må højst være 80 tegn.`);
+        } else if (name) {
+          children.push(name);
+        }
+      }
+    }
+
+    for (const extraCell of cells.slice(3)) {
       if (!extraCell.trim()) continue;
       const name = childName(extraCell);
       if (!name) continue;
@@ -150,7 +174,13 @@ export function parseGuestImport(input: string): GuestImportResult {
       }
     }
 
-    guests.push({ displayName, contactPhone, children, line: lineNumber });
+    guests.push({
+      displayName,
+      contactEmail,
+      contactPhone,
+      children,
+      line: lineNumber
+    });
   }
 
   if (guests.length > 100) {

@@ -318,10 +318,10 @@ export function GuestProfilePanel({
         <div className={`companion-access ${shareEmail || sharePhone ? "is-enabled" : "is-disabled"}`}>
           <div className="item-heading">
             <div>
-              <span className="eyebrow">Frivillig telefonbog</span>
+              <span className="eyebrow">Eventets kontaktbog</span>
               <h3>Del dine kontaktoplysninger</h3>
               <p className="helper-text">
-                Kun de oplysninger, du vælger her, bliver synlige for andre med et gyldigt gæstelink til eventet.
+                Markerede oplysninger er synlige for andre med et gyldigt gæstelink til eventet. Du kan altid slå delingen fra her.
               </p>
             </div>
             <span className="badge accent">Gemmes automatisk</span>

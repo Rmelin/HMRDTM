@@ -64,7 +64,10 @@ Den offentlige forside forklarer, at HMRDTM er skabt af Rasmus Melin Graasbøll 
 ## Gæster og personer (Admin)
 - Opret gæst og kopier invite-link
 - Importér op til 100 invitationer ad gangen fra CSV eller tekst med navn,
-  valgfrit telefonnummer og børn knyttet til den foregående hovedgæst
+  valgfrit telefonnummer, valgfri mail og børn knyttet til den foregående
+  hovedgæst
+- Importerede telefonnumre og mails deles som udgangspunkt i eventets
+  kontaktbog; gæsten kan efterfølgende skjule hvert felt fra sin profil
 - Importen skal forhåndsvises og valideres samlet; ved fejl oprettes ingen
   gæster, så en import aldrig efterlader en delvist oprettet gæsteliste
 - Gæstefamilie/gruppe understøtter flere personer (companions)

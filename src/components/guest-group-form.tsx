@@ -90,8 +90,10 @@ export function GuestGroupForm({ eventId }: { eventId: string }) {
         <div className="section-body">
           <p className="helper-text">
             Indsæt CSV eller tekst med én hovedgæst pr. linje. Første kolonne er
-            navn, anden kolonne er valgfrit telefonnummer. Indryk et barn under
-            hovedgæsten, eller tilføj barnet i en ekstra kolonne.
+            navn, anden kolonne er valgfrit telefonnummer, og tredje kolonne er
+            valgfri mail. Importerede kontaktoplysninger er synlige i eventets
+            kontaktbog som udgangspunkt; gæsten kan selv skjule dem. Indryk et
+            barn under hovedgæsten, eller tilføj barnet i en ekstra kolonne.
           </p>
           <textarea
             rows={9}
@@ -102,10 +104,10 @@ export function GuestGroupForm({ eventId }: { eventId: string }) {
               setImportError(null);
               setImportMessage(null);
             }}
-            placeholder={`Navn, Telefon
-Anna, +45 12 34 56 78
+            placeholder={`Navn, Telefon, Mail
+Anna, +45 12 34 56 78, anna@example.dk
   Alma
-Bo`}
+Bo,,bo@example.dk`}
           />
 
           {importText.trim() ? (
@@ -139,7 +141,8 @@ Bo`}
                         </span>
                       </div>
                       <div className="muted">
-                        {guest.contactPhone || "Intet telefonnummer"}
+                        {guest.contactPhone ? `Tlf. ${guest.contactPhone}` : "Intet telefonnummer"}
+                        {guest.contactEmail ? ` · Mail: ${guest.contactEmail}` : ""}
                         {guest.children.length > 0
                           ? ` · Børn: ${guest.children.join(", ")}`
                           : ""}

@@ -10,7 +10,7 @@ import { formatDateTime } from "@/lib/datetime";
 
 type Person = { id: string; name: string; type: string; dietType: string | null; dietNotes: string | null };
 type Availability = { comesAt: number | null; leavesAt: number | null };
-type Group = { id: string; displayName: string; contactPhone: string | null; inviteToken: string; eventStatus: string; lastSeenAt: number | null };
+type Group = { id: string; displayName: string; contactEmail: string | null; contactPhone: string | null; inviteToken: string; eventStatus: string; lastSeenAt: number | null };
 
 const status: Record<string, string> = { yes: "Deltager", maybe: "Måske", no: "Deltager ikke", invited: "Inviterede" };
 
@@ -50,6 +50,7 @@ export function GuestGroupRow({ group, people, availability, eventStartsAt, even
           <div className="muted">
             {group.lastSeenAt ? `Senest set ${formatDateTime(group.lastSeenAt)}` : "Invitation ikke åbnet"}
             {group.contactPhone ? ` · Tlf. ${group.contactPhone}` : ""}
+            {group.contactEmail ? ` · Mail: ${group.contactEmail}` : ""}
           </div>
         </div>
         <div className="tag-row" style={{ marginTop: 0 }}>

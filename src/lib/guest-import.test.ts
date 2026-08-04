@@ -12,11 +12,53 @@ Bo`);
   assert.deepEqual(result.guests, [
     {
       displayName: "Anna",
+      contactEmail: null,
       contactPhone: "+45 12 34 56 78",
       children: [],
       line: 2
     },
-    { displayName: "Bo", contactPhone: null, children: [], line: 3 }
+    {
+      displayName: "Bo",
+      contactEmail: null,
+      contactPhone: null,
+      children: [],
+      line: 3
+    }
+  ]);
+});
+
+test("læser navn, telefon og mail samt indrykkede børn", () => {
+  const result = parseGuestImport(`Navn, Telefon, Mail
+Gæst, +45 12 34 56 78
+
+  Barn til Gæst
+Gæst2,,mail@mail.com
+Gæst3,12345678, mailtil@mail.com
+\tBarn til gæst3`);
+
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.guests, [
+    {
+      displayName: "Gæst",
+      contactEmail: null,
+      contactPhone: "+45 12 34 56 78",
+      children: ["Barn til Gæst"],
+      line: 2
+    },
+    {
+      displayName: "Gæst2",
+      contactEmail: "mail@mail.com",
+      contactPhone: null,
+      children: [],
+      line: 5
+    },
+    {
+      displayName: "Gæst3",
+      contactEmail: "mailtil@mail.com",
+      contactPhone: "12345678",
+      children: ["Barn til gæst3"],
+      line: 6
+    }
   ]);
 });
 
@@ -50,6 +92,13 @@ test("afviser ugyldige telefonnumre", () => {
 
   assert.equal(result.guests.length, 1);
   assert.match(result.errors[0], /Telefonen er ugyldig/);
+});
+
+test("afviser ugyldig mail i en deklareret mailkolonne", () => {
+  const result = parseGuestImport("Navn,Telefon,Mail\nAnna,+4512345678,ikke-mail");
+
+  assert.equal(result.guests.length, 1);
+  assert.match(result.errors[0], /Mailadressen er ugyldig/);
 });
 
 test("læser semikolonsepareret CSV og ekstra børnekolonner", () => {

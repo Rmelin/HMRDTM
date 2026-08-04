@@ -62,6 +62,7 @@ export async function POST(
   } else {
     importedGuests = [{
       displayName: payload.data.displayName || "Ikke navngivet",
+      contactEmail: null,
       contactPhone: null,
       children: [],
       line: 1
@@ -78,7 +79,10 @@ export async function POST(
         displayName: guest.displayName,
         inviteToken: guest.inviteToken,
         eventStatus: "invited",
+        contactEmail: guest.contactEmail,
         contactPhone: guest.contactPhone,
+        shareEmail: Boolean(guest.contactEmail),
+        sharePhone: Boolean(guest.contactPhone),
         createdAt: now,
         lastSeenAt: null
       }).run();
