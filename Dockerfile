@@ -1,4 +1,6 @@
-ARG NODE_VERSION=24
+# Next.js 14 sammen med better-sqlite3 11.x kan abortere i Node 24's native
+# cleanup-hooks. Brug den kompatible LTS-runtime i både build og produktion.
+ARG NODE_VERSION=22
 
 ################################################################################
 # Byg appen. Dockerfile bruger bevidst ikke RUN --mount, så den også virker

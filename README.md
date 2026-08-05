@@ -22,7 +22,8 @@ Mobil-først webapp til små events. Admin opretter events, måltider og invitat
 
 ## Lokal udvikling
 
-Krav: Node.js 24 (se `.nvmrc`).
+Krav: Node.js 22 LTS (se `.nvmrc`). Node 24 bruges ikke, fordi den nuværende
+native SQLite-afhængighed kan få serverprocessen til at abortere ved runtime.
 
 ```bash
 npm ci
