@@ -157,7 +157,15 @@ export default async function AdminEventPage({ params }: { params: { id: string 
             <article className="stat-card"><span>Gæster</span><strong>{participantPeople.length}</strong><small className="muted">{groups.length} invitationer{ownerGuests.people.length > 0 ? ` · ${ownerGuests.people.length} ${ownerGuests.people.length === 1 ? "eventejer" : "eventejere"}` : ""}</small></article>
             <article className="stat-card"><span>Invitationssvar</span><strong>{answeredInvitations}</strong><small className="muted">har gemt deres deltagelse</small></article>
             <article className="stat-card"><span>Måltidsafvigelser</span><strong>{responses.length}</strong><small className="muted">ellers følges eventstatus</small></article>
-            <article className="stat-card"><span>Kosthensyn</span><strong>{diets.length}</strong><small className="muted">{notes.length} noter</small></article>
+            <a
+              className="stat-card stat-card-link"
+              href="#kostoversigt"
+              aria-label={`Vis kosthensyn: ${diets.length}, heraf ${notes.length} med noter`}
+            >
+              <span>Kosthensyn</span>
+              <strong>{diets.length}</strong>
+              <small className="muted">{notes.length} noter · Se detaljer →</small>
+            </a>
             <article className="stat-card"><span>Måltider</span><strong>{mealsList.length}</strong><small className="muted">i eventet</small></article>
           </div>
 
@@ -222,7 +230,7 @@ export default async function AdminEventPage({ params }: { params: { id: string 
         </div>
       </CollapsibleSection>
 
-      <CollapsibleSection title="Kostoversigt">
+      <CollapsibleSection id="kostoversigt" title="Kostoversigt" defaultOpen>
         {diets.length === 0 && notes.length === 0 ? <div className="empty-state">Ingen kosthensyn angivet.</div> : (
           <div className="list">{allPeople.filter((person) => person.dietType !== "none" || person.dietNotes).map((person) => <div className="list-item" key={person.id}><div className="item-heading"><strong>{person.name}</strong><span className="badge">{person.dietType || "none"}</span></div>{person.dietNotes ? <p>{person.dietNotes}</p> : null}</div>)}</div>
         )}
