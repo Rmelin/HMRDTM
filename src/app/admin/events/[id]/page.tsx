@@ -189,6 +189,14 @@ export default async function AdminEventPage({ params }: { params: { id: string 
       </div>
 
       <CollapsibleSection title={`Gæster og invitationslinks (${groups.length})`} defaultOpen>
+        <div className="button-row" style={{ marginTop: 0 }}>
+          <a
+            className="button ghost"
+            href={`/api/events/${event.id}/export?type=invitations`}
+          >
+            Hent invitationslinks som CSV
+          </a>
+        </div>
         <div className={`companion-access ${event.allowPartner || event.allowChildren ? "is-enabled" : "is-disabled"}`}>
           <div className="item-heading">
             <div><span className="eyebrow">Fælles eventregel</span><h3>Ekstra deltagere</h3></div>
