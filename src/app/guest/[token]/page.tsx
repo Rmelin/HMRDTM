@@ -7,6 +7,7 @@ import { GuestAvailabilityPanel } from "@/components/guest-availability-panel";
 import { GuestChatPanel } from "@/components/guest-chat-panel";
 import { GuestMealsPanel } from "@/components/guest-meals-panel";
 import { GuestProfilePanel } from "@/components/guest-profile-panel";
+import { GuestStatusPanel } from "@/components/guest-status-panel";
 import { buildContactBook } from "@/lib/contact";
 import { db } from "@/lib/db";
 import { formatDateTime, formatTime } from "@/lib/datetime";
@@ -169,7 +170,15 @@ export default async function GuestPage({ params }: { params: { token: string } 
           <h1>{context.event.title}</h1>
           <p>{context.event.description || "Du er inviteret – fortæl os, hvornår du kommer, og hvilke måltider du deltager i."}</p>
         </div>
-        <a className="button ghost" href={`/api/guest/${params.token}/ics`}>＋ Tilføj til kalender</a>
+        <aside className="guest-hero-actions">
+          <GuestStatusPanel
+            token={params.token}
+            initialStatus={context.group.eventStatus}
+          />
+          <a className="button ghost" href={`/api/guest/${params.token}/ics`}>
+            ＋ Tilføj til kalender
+          </a>
+        </aside>
         <div className="event-meta">
           <span>📍 {context.event.location || "Sted kommer senere"}</span>
           <span>🗓 {formatDateTime(context.event.startsAt)} – {formatDateTime(context.event.endsAt)}</span>
@@ -238,11 +247,10 @@ export default async function GuestPage({ params }: { params: { token: string } 
         )}
       </CollapsibleSection>
 
-      <CollapsibleSection title="1. Deltagelse og kost" defaultOpen>
+      <CollapsibleSection title="1. Profil, medfølgende og kost">
         <GuestProfilePanel
           token={params.token}
           displayName={context.group.displayName}
-          eventStatus={context.group.eventStatus}
           contactEmail={context.group.contactEmail}
           contactPhone={context.group.contactPhone}
           shareEmail={context.group.shareEmail}

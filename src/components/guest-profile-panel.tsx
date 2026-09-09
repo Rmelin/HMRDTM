@@ -3,18 +3,13 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type AnswerStatus = "yes" | "no" | "maybe";
-type Status = AnswerStatus | "invited";
 type DietType = "none" | "vegetarian" | "vegan" | "allergy" | "other";
 type Person = { id: string; name: string; type: string; dietType: string | null; dietNotes: string | null };
 type CompanionType = "partner" | "child";
 
-const statusLabels: Record<AnswerStatus, string> = { yes: "Ja", maybe: "Måske", no: "Deltager ikke" };
-
 export function GuestProfilePanel({
   token,
   displayName: initialDisplayName,
-  eventStatus: initialEventStatus,
   contactEmail: initialContactEmail,
   contactPhone: initialContactPhone,
   shareEmail: initialShareEmail,
@@ -25,7 +20,6 @@ export function GuestProfilePanel({
 }: {
   token: string;
   displayName: string;
-  eventStatus: string;
   contactEmail: string | null;
   contactPhone: string | null;
   shareEmail: boolean;
@@ -36,7 +30,6 @@ export function GuestProfilePanel({
 }) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(initialDisplayName);
-  const [eventStatus, setEventStatus] = useState<Status>(initialEventStatus as Status);
   const [contactEmail, setContactEmail] = useState(initialContactEmail ?? "");
   const [contactPhone, setContactPhone] = useState(initialContactPhone ?? "");
   const [shareEmail, setShareEmail] = useState(initialShareEmail);
@@ -55,8 +48,6 @@ export function GuestProfilePanel({
   const contactSaveQueue = useRef<Promise<void>>(Promise.resolve());
   const contactSaveCount = useRef(0);
   const latestContactSaveId = useRef(0);
-  const [statusSaving, setStatusSaving] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [addingType, setAddingType] = useState<CompanionType | null>(null);
   const [companionName, setCompanionName] = useState("");
   const [companionMessage, setCompanionMessage] = useState<string | null>(null);
@@ -70,45 +61,13 @@ export function GuestProfilePanel({
     );
   };
 
-  const saveStatus = async (nextStatus: AnswerStatus) => {
-    if (statusSaving || nextStatus === eventStatus) return;
-    const previousStatus = eventStatus;
-    setEventStatus(nextStatus);
-    setStatusSaving(true);
-    setStatusMessage(null);
-    try {
-      const response = await fetch(`/api/guest/${token}/event-status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventStatus: nextStatus })
-      });
-      const body = await response.json().catch(() => null);
-      if (!response.ok) {
-        setEventStatus(previousStatus);
-        setStatusMessage(body?.error ?? "Deltagelsesstatus kunne ikke gemmes");
-        return;
-      }
-      setStatusMessage(
-        body.affectedMeals > 0
-          ? `Gemt automatisk · ${body.affectedMeals} måltid(er) markeret efter Svar senest`
-          : "Deltagelsesstatus er gemt automatisk"
-      );
-      router.refresh();
-    } catch {
-      setEventStatus(previousStatus);
-      setStatusMessage("Der kunne ikke oprettes forbindelse til serveren");
-    } finally {
-      setStatusSaving(false);
-    }
-  };
-
   const save = async () => {
     setSaving(true);
     setMessage(null);
     const response = await fetch(`/api/guest/${token}/profile`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ displayName, eventStatus, people })
+      body: JSON.stringify({ displayName, people })
     });
     const body = await response.json();
     setSaving(false);
@@ -237,28 +196,6 @@ export function GuestProfilePanel({
 
   return (
     <div className="guest-profile-sections">
-      <section className="subcard guest-status-section">
-        <div className="guest-profile-section-heading">
-          <div><span className="eyebrow">Deltagelsesstatus</span><h3>Deltager du i eventet?</h3></div>
-          <span className="badge accent">Gemmes automatisk</span>
-        </div>
-        <div className="segmented" role="group" aria-label="Deltagelse i event">
-          {(Object.keys(statusLabels) as AnswerStatus[]).map((status) => (
-            <button
-              key={status}
-              type="button"
-              className={eventStatus === status ? "is-selected" : ""}
-              disabled={statusSaving}
-              onClick={() => void saveStatus(status)}
-            >
-              {statusLabels[status]}
-            </button>
-          ))}
-        </div>
-        {eventStatus === "invited" ? <p className="form-message" style={{ marginTop: 8 }}>Du har ikke svaret på invitationen endnu.</p> : null}
-        {statusMessage ? <p className={statusMessage.includes("gemt") || statusMessage.includes("Gemt") ? "success compact-message" : "error compact-message"}>{statusMessage}</p> : null}
-      </section>
-
       <section className="subcard stack guest-details-section">
         <div className="guest-profile-section-heading">
           <div><span className="eyebrow">Profil og medfølgende</span><h3>Navn, kost og partner/børn</h3></div>

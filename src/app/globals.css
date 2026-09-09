@@ -89,6 +89,12 @@ code { padding: .15rem .4rem; border-radius: 6px; background: var(--surface-3); 
 .event-hero > div:first-child { max-width: 700px; }
 .event-hero .event-meta { grid-column: 1 / -1; }
 .event-meta { display: flex; flex-wrap: wrap; gap: 8px 22px; color: var(--muted); }
+.guest-hero-actions { display: grid; width: min(360px, 100%); align-content: start; gap: 10px; }
+.guest-rsvp-panel { display: grid; gap: 10px; padding: 16px; border: 2px solid var(--accent); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
+.guest-rsvp-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.guest-rsvp-heading h2 { margin: 0; font-size: 1.2rem; }
+.guest-rsvp-heading .eyebrow { margin-bottom: 2px; }
+.guest-rsvp-panel .form-message { font-size: .84rem; }
 .eyebrow { display: block; margin-bottom: .5rem; color: var(--accent); font-size: .75rem; font-weight: 850; letter-spacing: .11em; text-transform: uppercase; }
 .progress-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 14px; padding: 16px 18px; box-shadow: none; }
 .progress-card strong, .progress-card span { display: block; }
@@ -262,6 +268,8 @@ input[type="checkbox"] { width: 24px; min-height: 24px; accent-color: var(--acce
   .content { padding: 16px 12px 60px; }
   .brand small { display: none; }
   .event-hero { grid-template-columns: 1fr; }
+  .guest-hero-actions { width: 100%; }
+  .guest-rsvp-panel { order: -1; }
   .event-hero .button { width: 100%; }
   .input-grid, .form-grid, .meal-grid { grid-template-columns: 1fr; }
   .user-name-editor { grid-template-columns: 1fr; }
