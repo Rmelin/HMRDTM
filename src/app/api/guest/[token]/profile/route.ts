@@ -2,7 +2,6 @@ import { and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { logEventStatusCutoffChanges } from "@/lib/cutoff";
 import { db } from "@/lib/db";
 import { getGuestContext } from "@/lib/guest";
 import { guestGroups, people } from "@/lib/schema";
@@ -10,7 +9,6 @@ import { guestGroups, people } from "@/lib/schema";
 const dietType = z.enum(["none", "vegetarian", "vegan", "allergy", "other"]);
 const schema = z.object({
   displayName: z.string().trim().max(80),
-  eventStatus: z.enum(["yes", "no", "maybe", "invited"]),
   people: z
     .array(
       z.object({
@@ -54,7 +52,6 @@ export async function PUT(
       .update(guestGroups)
       .set({
         displayName,
-        eventStatus: payload.data.eventStatus,
         lastSeenAt: Date.now()
       })
       .where(eq(guestGroups.id, context.group.id))
@@ -73,13 +70,5 @@ export async function PUT(
     }
   });
 
-  const affectedMeals = await logEventStatusCutoffChanges({
-    eventId: context.event.id,
-    groupId: context.group.id,
-    before: context.group.eventStatus,
-    after: payload.data.eventStatus,
-    changedBy: `guest:${context.group.id}`
-  });
-
-  return NextResponse.json({ ok: true, affectedMeals });
+  return NextResponse.json({ ok: true });
 }
