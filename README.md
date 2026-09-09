@@ -16,7 +16,7 @@ Mobil-først webapp til små events. Admin opretter events, måltider og invitat
 - Måltidsdetalje med gæsteliste, kost-tags og log over ændringer efter "Svar senest"
 - Kalenderbaseret oprettelse og redigering af måltider med klik/træk og låsning til eventets tidsrum
 - Programkalender med samme klik/træk-redigering, synlighedsvalg og tidsbegrænsning
-- ICS-kalenderfil og CSV-eksport
+- ICS-kalenderfil samt CSV-eksport af måltider og invitationslinks
 - Dark/light mode samt rød admin- og grøn gæsteaccent
 - SQLite WAL, migrationer, konsistent backup og healthcheck
 

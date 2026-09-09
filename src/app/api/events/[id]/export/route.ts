@@ -71,7 +71,10 @@ export async function GET(
   }
 
   const url = new URL(request.url);
-  const type = url.searchParams.get("type") === "names" ? "names" : "summary";
+  const requestedType = url.searchParams.get("type");
+  const type = requestedType === "names" || requestedType === "invitations"
+    ? requestedType
+    : "summary";
 
   const mealList = await db
     .select()
@@ -144,7 +147,16 @@ export async function GET(
 
   const rows: string[][] = [];
 
-  if (type === "names") {
+  if (type === "invitations") {
+    rows.push(["Navn", "Eventstatus", "Invitationslink"]);
+    for (const group of groupList) {
+      rows.push([
+        group.displayName,
+        eventStatusLabel(group.eventStatus),
+        `${url.origin}/guest/${group.inviteToken}`
+      ]);
+    }
+  } else if (type === "names") {
     rows.push([
       "Måltid",
       "Deltagere (forventet)",
@@ -178,7 +190,7 @@ export async function GET(
     ]);
   }
 
-  for (const meal of mealList) {
+  for (const meal of type === "invitations" ? [] : mealList) {
     const names: string[] = [];
     const maybeNames: string[] = [];
     let maybeCount = 0;
