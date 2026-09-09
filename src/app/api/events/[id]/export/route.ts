@@ -15,6 +15,7 @@ import { getCurrentUser, getEventForUser } from "@/lib/auth";
 import { calculateMealStats } from "@/lib/meal-stats";
 import { buildOwnerGuestData } from "@/lib/owner-guests";
 import { hasOverlap } from "@/lib/overlap";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 function csvEscape(value: string) {
   if (value.includes(",") || value.includes("\n") || value.includes('"')) {
@@ -71,6 +72,7 @@ export async function GET(
   }
 
   const url = new URL(request.url);
+  const publicOrigin = getPublicOrigin(request);
   const requestedType = url.searchParams.get("type");
   const type = requestedType === "names" || requestedType === "invitations"
     ? requestedType
@@ -153,7 +155,7 @@ export async function GET(
       rows.push([
         group.displayName,
         eventStatusLabel(group.eventStatus),
-        `${url.origin}/guest/${group.inviteToken}`
+        `${publicOrigin}/guest/${group.inviteToken}`
       ]);
     }
   } else if (type === "names") {
